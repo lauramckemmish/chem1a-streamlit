@@ -1,0 +1,43 @@
+source_id,species,ionization_stage,source_kind,wavelength_source_value,source_unit,wavelength_nm,wavelength_medium,reference_status,source_reported_intensity,source_url,notes
+H_I_BA_1,H,I,NIST persistent lines,6562.7110,Angstrom,656.27110,air,Ritz resolved fine-structure component,90,https://physics.nist.gov/PhysRefData/Handbook/Tables/hydrogentable3.htm,Balmer alpha component
+H_I_BA_2,H,I,NIST persistent lines,6562.7248,Angstrom,656.27248,air,Ritz resolved fine-structure component,30,https://physics.nist.gov/PhysRefData/Handbook/Tables/hydrogentable3.htm,Balmer alpha component
+H_I_BA_3,H,I,NIST persistent lines,6562.8518,Angstrom,656.28518,air,Ritz resolved fine-structure component,180,https://physics.nist.gov/PhysRefData/Handbook/Tables/hydrogentable3.htm,Balmer alpha component selected as display representative
+H_I_BB_1,H,I,NIST persistent lines,4861.2786,Angstrom,486.12786,air,Ritz resolved fine-structure component,30,https://physics.nist.gov/PhysRefData/Handbook/Tables/hydrogentable3.htm,Balmer beta component
+H_I_BB_2,H,I,NIST persistent lines,4861.2870,Angstrom,486.12870,air,Ritz resolved fine-structure component,10,https://physics.nist.gov/PhysRefData/Handbook/Tables/hydrogentable3.htm,Balmer beta component
+H_I_BB_3,H,I,NIST persistent lines,4861.3615,Angstrom,486.13615,air,Ritz resolved fine-structure component,60,https://physics.nist.gov/PhysRefData/Handbook/Tables/hydrogentable3.htm,Balmer beta component selected as display representative
+H_I_BG,H,I,NIST persistent lines,4340.462,Angstrom,434.0462,air,unresolved weighted-average multiplet,30,https://physics.nist.gov/PhysRefData/Handbook/Tables/hydrogentable3.htm,Balmer gamma
+H_I_BD,H,I,NIST strong lines,4101.74,Angstrom,410.174,air,source-reported air wavelength,15,https://physics.nist.gov/PhysRefData/Handbook/Tables/hydrogentable2.htm,Balmer delta
+H_I_BE,H,I,NIST strong lines,3970.072,Angstrom,397.0072,air,source-reported air wavelength,8,https://physics.nist.gov/PhysRefData/Handbook/Tables/hydrogentable2.htm,Balmer epsilon
+H_I_BZ,H,I,NIST strong lines,3889.049,Angstrom,388.9049,air,source-reported air wavelength,6,https://physics.nist.gov/PhysRefData/Handbook/Tables/hydrogentable2.htm,Balmer zeta
+HE_I_388_1,He,I,NIST persistent lines,3888.6046,Angstrom,388.86046,air,source-reported persistent line,60,https://physics.nist.gov/PhysRefData/Handbook/Tables/heliumtable3.htm,Triplet component
+HE_I_388_2,He,I,NIST persistent lines,3888.6456,Angstrom,388.86456,air,source-reported persistent line,200,https://physics.nist.gov/PhysRefData/Handbook/Tables/heliumtable3.htm,Triplet component
+HE_I_388_3,He,I,NIST persistent lines,3888.6489,Angstrom,388.86489,air,source-reported persistent line,300,https://physics.nist.gov/PhysRefData/Handbook/Tables/heliumtable3.htm,Triplet component
+HE_I_587_1,He,I,NIST persistent lines,5875.6148,Angstrom,587.56148,air,source-reported persistent line,500,https://physics.nist.gov/PhysRefData/Handbook/Tables/heliumtable3.htm,Triplet component selected as display representative
+HE_I_587_2,He,I,NIST persistent lines,5875.6404,Angstrom,587.56404,air,source-reported persistent line,250,https://physics.nist.gov/PhysRefData/Handbook/Tables/heliumtable3.htm,Triplet component
+HE_I_587_3,He,I,NIST persistent lines,5875.9663,Angstrom,587.59663,air,source-reported persistent line,120,https://physics.nist.gov/PhysRefData/Handbook/Tables/heliumtable3.htm,Triplet component
+HE_I_667,He,I,NIST persistent lines,6678.1517,Angstrom,667.81517,air,source-reported persistent line,200,https://physics.nist.gov/PhysRefData/Handbook/Tables/heliumtable3.htm,Single display feature
+HE_I_706_1,He,I,NIST persistent lines,7065.1771,Angstrom,706.51771,air,source-reported persistent line,100,https://physics.nist.gov/PhysRefData/Handbook/Tables/heliumtable3.htm,Triplet component selected as display representative
+HE_I_706_2,He,I,NIST persistent lines,7065.2153,Angstrom,706.52153,air,source-reported persistent line,60,https://physics.nist.gov/PhysRefData/Handbook/Tables/heliumtable3.htm,Triplet component
+HE_I_706_3,He,I,NIST persistent lines,7065.7086,Angstrom,706.57086,air,source-reported persistent line,20,https://physics.nist.gov/PhysRefData/Handbook/Tables/heliumtable3.htm,Triplet component
+HE_I_728,He,I,NIST persistent lines,7281.3507,Angstrom,728.13507,air,source-reported persistent line,50,https://physics.nist.gov/PhysRefData/Handbook/Tables/heliumtable3.htm,Single display feature
+NA_I_D2,Na,I,NIST persistent lines,5889.950,Angstrom,588.9950,air,source-reported persistent line,1000,https://physics.nist.gov/PhysRefData/Handbook/Tables/sodiumtable3.htm,Sodium D doublet component retained separately
+NA_I_D1,Na,I,NIST persistent lines,5895.924,Angstrom,589.5924,air,source-reported persistent line,500,https://physics.nist.gov/PhysRefData/Handbook/Tables/sodiumtable3.htm,Sodium D doublet component retained separately
+NE_I_540,Ne,I,NIST persistent lines,5400.5618,Angstrom,540.05618,air,source-reported persistent line,200,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_585,Ne,I,NIST persistent lines,5852.4879,Angstrom,585.24879,air,source-reported persistent line,200,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_602,Ne,I,NIST persistent lines,6029.9969,Angstrom,602.99969,air,source-reported persistent line,100,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_607,Ne,I,NIST persistent lines,6074.3377,Angstrom,607.43377,air,source-reported persistent line,100,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_614,Ne,I,NIST persistent lines,6143.0626,Angstrom,614.30626,air,source-reported persistent line,100,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_616,Ne,I,NIST persistent lines,6163.5939,Angstrom,616.35939,air,source-reported persistent line,100,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_621,Ne,I,NIST persistent lines,6217.2812,Angstrom,621.72812,air,source-reported persistent line,100,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_626,Ne,I,NIST persistent lines,6266.4950,Angstrom,626.64950,air,source-reported persistent line,100,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_638,Ne,I,NIST persistent lines,6382.9917,Angstrom,638.29917,air,source-reported persistent line,100,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_640,Ne,I,NIST persistent lines,6402.248,Angstrom,640.2248,air,source-reported persistent line,200,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_650,Ne,I,NIST persistent lines,6506.5281,Angstrom,650.65281,air,source-reported persistent line,150,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_659,Ne,I,NIST persistent lines,6598.9529,Angstrom,659.89529,air,source-reported persistent line,100,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_692,Ne,I,NIST persistent lines,6929.4673,Angstrom,692.94673,air,source-reported persistent line,1000,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_703,Ne,I,NIST persistent lines,7032.4131,Angstrom,703.24131,air,source-reported persistent line,800,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_717,Ne,I,NIST persistent lines,7173.9381,Angstrom,717.39381,air,source-reported persistent line,800,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+NE_I_724,Ne,I,NIST persistent lines,7245.1666,Angstrom,724.51666,air,source-reported persistent line,800,https://physics.nist.gov/PhysRefData/Handbook/Tables/neontable3.htm,Visible persistent line
+HG_I_404,Hg,I,NIST persistent lines,4046.563,Angstrom,404.6563,air,source-reported persistent line,400,https://physics.nist.gov/PhysRefData/Handbook/Tables/mercurytable3.htm,Visible persistent line
+HG_I_435,Hg,I,NIST persistent lines,4358.328,Angstrom,435.8328,air,source-reported persistent line,1000,https://physics.nist.gov/PhysRefData/Handbook/Tables/mercurytable3.htm,Visible persistent line
+HG_I_546,Hg,I,NIST persistent lines,5460.735,Angstrom,546.0735,air,source-reported persistent line,500,https://physics.nist.gov/PhysRefData/Handbook/Tables/mercurytable3.htm,Visible persistent line

@@ -1,0 +1,33 @@
+feature_id,species,ionization_stage,wavelength_nm,source_ids,show_compare_atoms,show_hydrogen_detail,series,lower_n,upper_n,grouping_status,notes
+H_I_BALMER_ALPHA,H,I,656.28518,H_I_BA_1|H_I_BA_2|H_I_BA_3,true,true,Balmer,2,3,resolved components represented by one teaching feature,Representative is the NIST persistent-line component H_I_BA_3; not an average
+H_I_BALMER_BETA,H,I,486.13615,H_I_BB_1|H_I_BB_2|H_I_BB_3,true,true,Balmer,2,4,resolved components represented by one teaching feature,Representative is the NIST persistent-line component H_I_BB_3; not an average
+H_I_BALMER_GAMMA,H,I,434.0462,H_I_BG,true,true,Balmer,2,5,NIST unresolved weighted-average multiplet,NIST source value retained
+H_I_BALMER_DELTA,H,I,410.174,H_I_BD,true,true,Balmer,2,6,NIST strong-line feature,NIST source value retained
+H_I_BALMER_EPSILON,H,I,397.0072,H_I_BE,false,true,Balmer,2,7,NIST strong-line feature,NIST source value retained
+H_I_BALMER_ZETA,H,I,388.9049,H_I_BZ,false,true,Balmer,2,8,NIST strong-line feature,NIST source value retained
+HE_I_388_FEATURE,He,I,388.86046,HE_I_388_1|HE_I_388_2|HE_I_388_3,true,false,,,unresolved teaching feature,Representative is first NIST component; no arbitrary average
+HE_I_587_FEATURE,He,I,587.56148,HE_I_587_1|HE_I_587_2|HE_I_587_3,true,false,,,unresolved teaching feature,Representative is NIST source row HE_I_587_1; no arbitrary average
+HE_I_667_FEATURE,He,I,667.81517,HE_I_667,true,false,,,single persistent line,NIST source value retained
+HE_I_706_FEATURE,He,I,706.51771,HE_I_706_1|HE_I_706_2|HE_I_706_3,true,false,,,unresolved teaching feature,Representative is NIST source row HE_I_706_1; no arbitrary average
+HE_I_728_FEATURE,He,I,728.13507,HE_I_728,true,false,,,single persistent line,NIST source value retained
+NA_I_D2,Na,I,588.9950,NA_I_D2,true,false,,,resolved sodium D-doublet feature,Retained separately
+NA_I_D1,Na,I,589.5924,NA_I_D1,true,false,,,resolved sodium D-doublet feature,Retained separately
+NE_I_540,Ne,I,540.05618,NE_I_540,true,false,,,single persistent line,NIST source value retained
+NE_I_585,Ne,I,585.24879,NE_I_585,true,false,,,single persistent line,NIST source value retained
+NE_I_602,Ne,I,602.99969,NE_I_602,true,false,,,single persistent line,NIST source value retained
+NE_I_607,Ne,I,607.43377,NE_I_607,true,false,,,single persistent line,NIST source value retained
+NE_I_614,Ne,I,614.30626,NE_I_614,true,false,,,single persistent line,NIST source value retained
+NE_I_616,Ne,I,616.35939,NE_I_616,true,false,,,single persistent line,NIST source value retained
+NE_I_621,Ne,I,621.72812,NE_I_621,true,false,,,single persistent line,NIST source value retained
+NE_I_626,Ne,I,626.64950,NE_I_626,true,false,,,single persistent line,NIST source value retained
+NE_I_638,Ne,I,638.29917,NE_I_638,true,false,,,single persistent line,NIST source value retained
+NE_I_640,Ne,I,640.2248,NE_I_640,true,false,,,single persistent line,NIST source value retained
+NE_I_650,Ne,I,650.65281,NE_I_650,true,false,,,single persistent line,NIST source value retained
+NE_I_659,Ne,I,659.89529,NE_I_659,true,false,,,single persistent line,NIST source value retained
+NE_I_692,Ne,I,692.94673,NE_I_692,true,false,,,single persistent line,NIST source value retained
+NE_I_703,Ne,I,703.24131,NE_I_703,true,false,,,single persistent line,NIST source value retained
+NE_I_717,Ne,I,717.39381,NE_I_717,true,false,,,single persistent line,NIST source value retained
+NE_I_724,Ne,I,724.51666,NE_I_724,true,false,,,single persistent line,NIST source value retained
+HG_I_404,Hg,I,404.6563,HG_I_404,true,false,,,single persistent line,NIST source value retained
+HG_I_435,Hg,I,435.8328,HG_I_435,true,false,,,single persistent line,NIST source value retained
+HG_I_546,Hg,I,546.0735,HG_I_546,true,false,,,single persistent line,NIST source value retained

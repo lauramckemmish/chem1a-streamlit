@@ -1,0 +1,16 @@
+series,member,lower_n,upper_n,wavelength_nm,wavelength_medium,source_url,source_notes
+Lyman,alpha,1,2,121.5,vacuum,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 1215 Angstrom
+Lyman,beta,1,3,102.5,vacuum,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 1025 Angstrom
+Lyman,gamma,1,4,97.2,vacuum,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 972 Angstrom
+Lyman,delta,1,5,94.9,vacuum,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 949 Angstrom
+Lyman,epsilon,1,6,93.7,vacuum,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 937 Angstrom
+Balmer,alpha,2,3,656.2,air,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 6562 Angstrom
+Balmer,beta,2,4,486.1,air,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 4861 Angstrom
+Balmer,gamma,2,5,434.0,air,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 4340 Angstrom
+Balmer,delta,2,6,410.1,air,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 4101 Angstrom
+Balmer,epsilon,2,7,397.0,air,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 3970 Angstrom
+Paschen,alpha,3,4,1875.1,air,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 18751 Angstrom
+Paschen,beta,3,5,1281.8,air,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 12818 Angstrom
+Paschen,gamma,3,6,1093.8,air,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 10938 Angstrom
+Paschen,delta,3,7,1004.9,air,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 10049 Angstrom
+Paschen,epsilon,3,8,954.597,air,https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy-atomic,NIST main-series table value converted from 9545.97 Angstrom

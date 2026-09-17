@@ -20,4 +20,6 @@ streamlit run app.py
 
 The Week 01 design source is [CHEM1A_W01_SPECTROSCOPY_DESIGN.md](experiences/w01_spectroscopy/CHEM1A_W01_SPECTROSCOPY_DESIGN.md).
 
+The Week 01 scientific data and provenance layer is in [data/spectroscopy](data/spectroscopy), with its source decisions recorded in [PROVENANCE.md](data/spectroscopy/PROVENANCE.md).
+
 Add future experiences only when they have been genuinely designed and are needed.
