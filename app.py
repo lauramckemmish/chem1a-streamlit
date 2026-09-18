@@ -4,6 +4,9 @@ from chem1a_ui import apply_shared_visual_system, compare_prompt, hard_reveal, s
 from experiences.w01_spectroscopy import hydrogen, spectrum
 
 
+EXPLORE_DEFAULT_SELECTED_SPECIES = spectrum.SPECIES_ORDER
+
+
 def remember_explore_control(control_key: str) -> None:
     """Keep Explore controls available while the learner temporarily visits Hydrogen."""
     st.session_state[f"saved_{control_key}"] = st.session_state[control_key]
@@ -27,22 +30,12 @@ def explore_reveal_state() -> tuple[bool, bool]:
 def render_explore_spectra() -> None:
     """Render the established first spectroscopy phenomenon surface."""
     st.header("Explore atomic spectra")
-    st.write("Select atoms to add their selected prominent lines.")
-
-    with st.container(key="chem1a_stage_controls"):
-        st.markdown('<p class="chem1a-control-label">Atoms to compare</p>', unsafe_allow_html=True)
-        atom_columns = (*st.columns(3), *st.columns(3))
-        selected_species = [
-            symbol
-            for column, symbol in zip(atom_columns, spectrum.SPECIES_ORDER)
-            if column.checkbox(
-                spectrum.SPECIES_NAMES[symbol],
-                value=explore_control_value(f"atom_{symbol}", symbol in spectrum.DEFAULT_SELECTED_SPECIES),
-                key=f"atom_{symbol}",
-                on_change=remember_explore_control,
-                args=(f"atom_{symbol}",),
-            )
-        ]
+    st.write("Compare the patterns in these atomic spectra.")
+    selected_species = [
+        symbol
+        for symbol in spectrum.SPECIES_ORDER
+        if explore_control_value(f"atom_{symbol}", symbol in EXPLORE_DEFAULT_SELECTED_SPECIES)
+    ]
 
     if selected_species:
         wavelength_revealed, absorption_revealed = explore_reveal_state()
@@ -56,6 +49,22 @@ def render_explore_spectra() -> None:
             st.caption("Colour is an illustrative wavelength cue. Each line marks a selected spectral feature.")
         compare_prompt("What changes? What stays the same?")
 
+    else:
+        st.info("Choose an atom to keep a spectrum in view.")
+
+    with st.container(key="chem1a_stage_controls"):
+        st.markdown('<p class="chem1a-control-label">Focus the comparison</p>', unsafe_allow_html=True)
+        atom_columns = (*st.columns(3), *st.columns(3))
+        for column, symbol in zip(atom_columns, spectrum.SPECIES_ORDER):
+            column.checkbox(
+                spectrum.SPECIES_NAMES[symbol],
+                value=explore_control_value(f"atom_{symbol}", symbol in EXPLORE_DEFAULT_SELECTED_SPECIES),
+                key=f"atom_{symbol}",
+                on_change=remember_explore_control,
+                args=(f"atom_{symbol}",),
+            )
+
+    if selected_species:
         if not wavelength_revealed:
             hard_reveal(
                 "Return to these same patterns and add a wavelength scale.",
@@ -77,8 +86,6 @@ def render_explore_spectra() -> None:
                 "What do you notice about where the absorption and emission lines appear?",
                 key="chem1a_absorption_prompt",
             )
-    else:
-        st.info("Select an atom to begin.")
 
 
 def render_hydrogen() -> None:

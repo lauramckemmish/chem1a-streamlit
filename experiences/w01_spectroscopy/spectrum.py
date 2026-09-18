@@ -135,13 +135,13 @@ def _render_visual_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[s
     view. Each line has identical geometry, so brightness and height do not imply
     relative line strength.
     """
-    row_height = 82
+    row_height = 88
     height = 20 + row_height * len(rows)
     svg_rows: list[str] = []
     for index, (symbol, features) in enumerate(rows.items()):
         top = 10 + index * row_height
         field_top = top
-        field_height = 60
+        field_height = 66
         values = ", ".join(f"{float(feature['wavelength_nm']):.3f}" for feature in features)
         lines = "".join(
             f'<line x1="{wavelength_x(float(feature["wavelength_nm"])):.2f}" y1="{field_top + 7}" '
@@ -160,7 +160,7 @@ def _render_visual_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[s
 .visual-spectrum-svg {{ display: block; width: 100%; height: auto; background: #ffffff; font-family: "Source Sans Pro", Arial, sans-serif; color: #17212b; }}
 .visual-field {{ fill: #080b12; stroke: #1f2937; stroke-width: 1; }}
 .visual-species {{ fill: #17212b; font-size: 19px; font-weight: 650; }}
-.visual-spectral-line {{ stroke-width: 2.4; vector-effect: non-scaling-stroke; stroke-linecap: square; }}
+.visual-spectral-line {{ stroke-width: 2.6; vector-effect: non-scaling-stroke; stroke-linecap: square; }}
 </style>
 <svg class="visual-spectrum-svg" viewBox="0 0 1200 {height}" role="img" aria-label="Selected atomic visual emission spectra">
 <title>Selected atomic visual emission spectra</title>

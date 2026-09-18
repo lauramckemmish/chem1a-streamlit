@@ -68,7 +68,9 @@ Do not initially explain the origin of line structure or place an energy-level/R
 
 ### Reused Screen 1 — Explore spectra
 
-**DECISION:** Explore spectra is one reusable phenomenon surface with an intentional representational progression. On the first visit (Move A), learners inspect visual/barcode emission spectra: a dark field with bright coloured lines, where the phenomenon and pattern come before numerical measurement. Hydrogen alone is the default starting spectrum; each selected comparison atom adds one vertically aligned individual spectrum.
+**OBSERVATION:** Rendered inspection found a single-hydrogen default too visually sparse to make the barcode-comparison task obvious.
+
+**DECISION:** Explore spectra is one reusable phenomenon surface with an intentional representational progression. On the first visit (Move A), learners inspect all five visual/barcode emission spectra: dark fields with bright coloured lines, where the phenomenon and pattern come before numerical measurement. Learners encounter the evidence before configuring the app. Atom controls sit below the evidence as “Focus the comparison” controls: all five start selected, and learners may remove spectra to isolate a comparison without resetting the representational progression.
 
 After workshop work reconnecting wavelength, frequency and photon energy (Move B, outside the app), learners return in Move C and intentionally reveal the quantitative wavelength representation. The same selected features are transformed/enriched into a labelled 380–780 nm line spectrum; this is not an arbitrary display preference or a duplicated second spectrum for every atom. The barcode and wavelength-axis spectrum are scientifically close but cognitively distinct: the first asks, “What does the emitted light look like?” while the second asks, “Where exactly are those features?”
 
