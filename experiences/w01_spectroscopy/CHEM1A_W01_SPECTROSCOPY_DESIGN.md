@@ -1,6 +1,6 @@
 # CHEM 1A Week 01 — Spectroscopy Experience Design
 
-Status: DESIGN v0.2 — agreed learning direction and scientific/data decisions, pre-implementation.
+Status: IMPLEMENTED v1 — current design source for the testable Week 01 spectroscopy experience.
 
 ## Purpose
 
@@ -13,10 +13,11 @@ Its role is to make a small number of scientific representations easy to inspect
 Core journey:
 
 notice spectral patterns
-→ return to hydrogen
-→ connect energy-level reasoning to observed lines
-→ translate barcode to intensity-vs-wavelength
-→ extend beyond visible light
+→ add quantitative wavelength information
+→ reason about the hydrogen model on whiteboard/paper
+→ test a predicted wavelength against observed hydrogen evidence
+→ briefly extend hydrogen beyond visible light
+→ translate quantitative line spectrum to intensity-vs-wavelength
 
 ## Audience
 
@@ -84,7 +85,7 @@ For this bounded first-year representation, absorption deliberately uses the sam
 
 Separate aligned atomic spectra are the current core representation. Combined spectra are removed from the learner-facing design and parked only as a possible future composition/mixture feature if a real learning need emerges. The hard reveal persists for the session; after it is activated, each selected atom's emission and absorption representations are paired together. Screen 1 stops before explanatory models, transitions, calculations, or line assignments.
 
-The wider representational progression is visual/barcode spectrum → quantitative wavelength line spectrum → later intensity-vs-wavelength graph. The graph belongs to the future Read the spectrum surface and is not specified in detail here. Once multiple real learner surfaces exist, tab navigation is the app-stage grammar. The sidebar provides shared CHEM 1A shell and verified resource/source context; it is not stage navigation.
+The wider representational progression is visual/barcode spectrum → quantitative wavelength line spectrum → intensity-vs-wavelength graph. The graph is implemented in the separate third learner surface, Read the spectrum. The sidebar provides shared CHEM 1A shell and verified resource/source context; it is not stage navigation.
 
 **DECISION:** The shared CHEM 1A shell uses compact course/week/experience context so the active learner surface and scientific evidence dominate the main-page hierarchy. Course identity remains available in both the compact main context and sidebar because the sidebar may be collapsed.
 
@@ -99,7 +100,7 @@ Whiteboard and paper remain the thinking surfaces for reasoning about energy lev
 
 Transition labels are an optional reference reveal, not a gate or reward. A collapsed bottom extension locates selected NIST Lyman, Balmer, and Paschen references across UV, visible, and IR, with readable local series views. This establishes that visible Balmer features are only part of hydrogen's spectrum without becoming a series calculator.
 
-Hydrogen-like-ion comparison remains an optional later extension whose representation is not yet settled. Read the spectrum remains a separate future cognitive surface.
+Hydrogen-like-ion comparison remains an optional later extension whose representation is not yet settled. Read the spectrum is the implemented separate third cognitive surface.
 
 Students return to the same hydrogen spectral representation encountered earlier.
 
@@ -156,7 +157,9 @@ Do not imply that peak height equals transition probability. Observed relative l
 
 This is optional depth for students ready for more spectroscopy, not part of the mandatory representation-mapping pathway.
 
-## Stage 4 — Beyond visible
+## Hydrogen extension — Beyond visible
+
+This brief optional progressive-disclosure extension is implemented within the Hydrogen surface after the prediction/evidence checkpoint. It is not a fourth learner-facing tab or stage.
 
 Main cognitive job:
 generalise beyond the human-visible window.
@@ -194,7 +197,7 @@ Critical distinction:
 
 neutral helium is **not** the Z=2 version of hydrogen.
 
-Do not give this extension equal visual weight to the required four-stage journey.
+Do not give this extension equal visual weight to the required three-surface v1 journey.
 
 ## Molecular spectra
 
@@ -208,18 +211,13 @@ A separate future molecular/IR experience may be considered only if there is a g
 
 ## Interaction direction
 
-Likely learner navigation:
+Implemented learner navigation:
 
-Compare atoms
+Explore spectra
 Hydrogen
 Read the spectrum
-Beyond visible
 
-with a clearly secondary optional extension:
-
-Explore further
-
-These are working labels, not final learner copy.
+Beyond-visible hydrogen content is contained in Hydrogen’s progressive-disclosure extension, not a separate tab. Optional hydrogenic-ion exploration remains parked for later.
 
 Avoid a large control dashboard.
 
@@ -240,7 +238,7 @@ Use the mature Data Science Streamlit learner-voice principles where appropriate
 - no generic edtech enthusiasm;
 - protect learner reasoning.
 
-Exact learner-facing copy has not yet been authorised.
+Learner-facing copy has completed a bounded voice/copy pass and is established for v1 testing. Further changes should be evidence-led rather than general polishing.
 
 ## Facilitator support
 
