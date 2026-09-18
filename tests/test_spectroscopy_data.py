@@ -2,6 +2,7 @@ import unittest
 from decimal import Decimal
 
 from experiences.w01_spectroscopy import data
+from experiences.w01_spectroscopy import spectrum
 
 
 class SpectroscopyDataTests(unittest.TestCase):
@@ -49,6 +50,26 @@ class SpectroscopyDataTests(unittest.TestCase):
 
     def test_angstrom_conversion_is_exact(self) -> None:
         self.assertEqual(Decimal("656.28518"), data.angstrom_to_nm("6562.8518"))
+
+    def test_stage_1_renderer_uses_only_approved_data(self) -> None:
+        selected = spectrum.features_for_species(["H", "Na", "Ne"])
+        self.assertEqual(["H", "Na", "Ne"], list(selected))
+        self.assertTrue(
+            all(feature in data.stage_1_comparison_features() for features in selected.values() for feature in features)
+        )
+        self.assertTrue(
+            all(380 <= float(feature["wavelength_nm"]) <= 780 for features in selected.values() for feature in features)
+        )
+
+    def test_stage_1_renderer_keeps_coordinates_shared(self) -> None:
+        self.assertEqual(spectrum.wavelength_x(589.0), spectrum.wavelength_x(589.0))
+        self.assertLess(spectrum.wavelength_x(588.9950), spectrum.wavelength_x(589.5924))
+        self.assertEqual(spectrum.PLOT_LEFT, spectrum.wavelength_x(380.0))
+        self.assertEqual(spectrum.PLOT_RIGHT, spectrum.wavelength_x(780.0))
+
+    def test_stage_1_renderer_rejects_unapproved_species(self) -> None:
+        with self.assertRaises(ValueError):
+            spectrum.features_for_species(["He+"])
 
 
 if __name__ == "__main__":
