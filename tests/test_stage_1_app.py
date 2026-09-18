@@ -132,6 +132,7 @@ class StageOneAppTests(unittest.TestCase):
     def test_hydrogen_evidence_is_hidden_until_a_valid_prediction_then_persists(self) -> None:
         self.assertEqual(["Your predicted wavelength (nm)"], [control.label for control in self.app.number_input])
         initial = [block.value for block in self.app.markdown]
+        self.assertTrue(any("You have a predicted wavelength. Now test the model against the hydrogen spectrum." in block for block in initial))
         self.assertFalse(any("Observed hydrogen Balmer features" in block for block in initial))
         self.assertNotIn("Show transition labels", [control.label for control in self.app.checkbox])
         self.app.number_input[0].set_value(650.123).run()
@@ -139,8 +140,16 @@ class StageOneAppTests(unittest.TestCase):
         rendered = next(block.value for block in self.app.markdown if "Your prediction: 650.123 nm" in block.value)
         self.assertIn("Your prediction: 650.123 nm", rendered)
         self.assertIn("Show transition labels", [control.label for control in self.app.checkbox])
-        self.assertTrue(any("Does your prediction match an observed line?" in block.value for block in self.app.markdown))
+        self.assertTrue(any("This is the test: does your prediction match an observed line?" in block.value for block in self.app.markdown))
+        self.assertIn(
+            "Line height is simplified here. Compare wavelength position, not relative line strength.",
+            [caption.value for caption in self.app.caption],
+        )
         self.assertIn("See more of hydrogen", [section.label for section in self.app.expander])
+        self.assertTrue(any("Visible Balmer lines are only part of the hydrogen spectrum." in block.value for block in self.app.markdown))
+        self.assertTrue(any("Where the series appear" in block.value for block in self.app.markdown))
+        self.assertFalse(any("The overview locates the series. Use the local views below to inspect selected reference lines." in block.value for block in self.app.markdown))
+        self.assertTrue(all(label in [control.label for control in self.app.checkbox] for label in ("Lyman · UV", "Balmer · visible", "Paschen · IR")))
         self.app.run()
         self.assertTrue(any("Observed hydrogen Balmer features" in block.value for block in self.app.markdown))
 
@@ -149,7 +158,14 @@ class StageOneAppTests(unittest.TestCase):
         self.button("Plot my prediction").click().run()
         self.assertTrue(any("Observed hydrogen Balmer features" in block.value for block in self.app.markdown))
         self.assertFalse(any("Your prediction: 820.000 nm" in block.value for block in self.app.markdown))
-        self.assertIn("This prediction is outside the displayed 380–780 nm spectrum.", [notice.value for notice in self.app.info])
+        self.assertIn("Your prediction lands outside the displayed 380–780 nm range.", [notice.value for notice in self.app.info])
+
+    def test_hydrogen_prediction_messages_are_concise_and_neutral(self) -> None:
+        self.button("Plot my prediction").click().run()
+        self.assertIn("Enter your predicted wavelength in nm first.", [notice.value for notice in self.app.info])
+        self.app.number_input[0].set_value(-1.0).run()
+        self.button("Plot my prediction").click().run()
+        self.assertIn("Enter a positive wavelength in nm.", [notice.value for notice in self.app.info])
 
     def test_read_spectrum_has_aligned_representations_and_native_trace_control(self) -> None:
         self.assertEqual(["Choose a line to trace"], [control.label for control in self.app.selectbox])

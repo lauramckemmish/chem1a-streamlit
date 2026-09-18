@@ -103,7 +103,7 @@ def render_explore_spectra() -> None:
 def render_hydrogen() -> None:
     """Render the spectral-evidence surface learners revisit after paper-based reasoning."""
     st.header("Hydrogen")
-    st.write("Use your calculated wavelength to test the model against the hydrogen spectrum.")
+    st.write("You have a predicted wavelength. Now test the model against the hydrogen spectrum.")
 
     prediction_column, action_column = st.columns((3, 1))
     predicted_wavelength = prediction_column.number_input(
@@ -117,9 +117,9 @@ def render_hydrogen() -> None:
     if plot_prediction:
         st.session_state.pop("hydrogen_prediction_nm", None)
         if predicted_wavelength is None:
-            st.info("Enter a wavelength in nm to place your prediction on the spectrum.")
+            st.info("Enter your predicted wavelength in nm first.")
         elif float(predicted_wavelength) <= 0:
-            st.info("Enter a positive wavelength in nm to place your prediction on the spectrum.")
+            st.info("Enter a positive wavelength in nm.")
         else:
             st.session_state["hydrogen_evidence_revealed"] = True
             st.session_state["hydrogen_submitted_prediction_nm"] = float(predicted_wavelength)
@@ -129,7 +129,7 @@ def render_hydrogen() -> None:
     if hydrogen_evidence_revealed():
         submitted_prediction = st.session_state.get("hydrogen_submitted_prediction_nm")
         if submitted_prediction is not None and not hydrogen.prediction_is_in_display_range(float(submitted_prediction)):
-            st.info("This prediction is outside the displayed 380–780 nm spectrum.")
+            st.info("Your prediction lands outside the displayed 380–780 nm range.")
         show_transition_labels = st.checkbox("Show transition labels", value=False, key="show_hydrogen_transition_labels")
         st.markdown(
             hydrogen.render_balmer_detail_svg(
@@ -138,14 +138,13 @@ def render_hydrogen() -> None:
             ),
             unsafe_allow_html=True,
         )
-        st.caption("Observed lines have uniform geometry here: position is the evidence, not relative line strength.")
-        compare_prompt("Does your prediction match an observed line?", key="chem1a_hydrogen_prediction_prompt")
+        st.caption("Line height is simplified here. Compare wavelength position, not relative line strength.")
+        compare_prompt("This is the test: does your prediction match an observed line?", key="chem1a_hydrogen_prediction_prompt")
 
         with st.expander("See more of hydrogen", expanded=False):
             st.write("Visible Balmer lines are only part of the hydrogen spectrum.")
-            st.markdown("**Where the selected series occur**")
+            st.markdown("**Where the series appear**")
             st.markdown(hydrogen.render_series_overview_svg(), unsafe_allow_html=True)
-            st.caption("The overview locates the series. Use the local views below to inspect selected reference lines.")
 
             series_columns = st.columns(3)
             selected_series = [
