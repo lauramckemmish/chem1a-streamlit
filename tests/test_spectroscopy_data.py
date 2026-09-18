@@ -149,19 +149,63 @@ class SpectroscopyDataTests(unittest.TestCase):
         self.assertEqual(64.0, read_spectrum.ILLUSTRATIVE_PEAK_HEIGHT)
         self.assertNotIn("relative_intensity", rendered)
 
-    def test_prediction_marker_uses_the_entered_value_without_reference_substitution(self) -> None:
+    def test_hydrogen_transition_lookup_uses_existing_stored_features(self) -> None:
+        target = hydrogen.observed_feature_for_transition(3, 2)
+        self.assertIsNotNone(target)
+        self.assertEqual("656.28518", target["wavelength_nm"])
+        self.assertIsNone(hydrogen.observed_feature_for_transition(9, 2))
+        self.assertIsNone(hydrogen.observed_feature_for_transition(2, 3))
+
+    def test_hydrogen_adaptive_comparison_window_is_local_and_padded(self) -> None:
+        target = hydrogen.observed_feature_for_transition(3, 2)
+        observed_nm = float(target["wavelength_nm"])
+        minimum, maximum = hydrogen.adaptive_comparison_window(650.0, observed_nm)
+        self.assertGreaterEqual(maximum - minimum, hydrogen.MINIMUM_COMPARISON_WINDOW_NM)
+        self.assertLess(minimum, 650.0)
+        self.assertGreater(maximum, observed_nm)
+        wide_minimum, wide_maximum = hydrogen.adaptive_comparison_window(486.0, observed_nm)
+        self.assertGreater(wide_maximum - wide_minimum, maximum - minimum)
+        self.assertAlmostEqual(5.0, 486.0 - wide_minimum)
+        self.assertAlmostEqual(5.0, wide_maximum - observed_nm)
+
+    def test_hydrogen_local_comparison_preserves_full_precision_and_displays_nearest_nm(self) -> None:
+        target = hydrogen.observed_feature_for_transition(3, 2)
         prediction_nm = 650.123
-        rendered = hydrogen.render_balmer_detail_svg(prediction_nm=prediction_nm)
-        self.assertIn("Your prediction: 650.123 nm", rendered)
-        self.assertIn(f'x1="{spectrum.wavelength_x(prediction_nm):.2f}"', rendered)
-        self.assertTrue(hydrogen.prediction_is_in_display_range(prediction_nm))
-        self.assertFalse(hydrogen.prediction_is_in_display_range(820.0))
-        self.assertFalse(hydrogen.prediction_is_in_display_range(-1.0))
+        rendered = hydrogen.render_local_comparison_svg(prediction_nm=prediction_nm, observed_feature=target)
+        minimum, maximum = hydrogen.adaptive_comparison_window(prediction_nm, float(target["wavelength_nm"]))
+        self.assertIn("Your prediction · 650 nm", rendered)
+        self.assertIn("Observed 3→2 · 656 nm", rendered)
+        self.assertIn(f'x1="{hydrogen._x(prediction_nm, minimum, maximum):.2f}"', rendered)
+        self.assertIn(f'x1="{hydrogen._x(float(target["wavelength_nm"]), minimum, maximum):.2f}"', rendered)
+        self.assertNotIn("656.28518 nm", rendered)
+
+    def test_hydrogen_prediction_classification_uses_only_stored_features(self) -> None:
+        target = hydrogen.observed_feature_for_transition(3, 2)
+        self.assertEqual(("target", None), hydrogen.prediction_match(target, 656.0))
+        kind, other = hydrogen.prediction_match(target, 486.136)
+        self.assertEqual("other_line", kind)
+        self.assertEqual("4→2", hydrogen.transition_label(other))
+        self.assertEqual(("mismatch", None), hydrogen.prediction_match(target, 650.0))
+        self.assertTrue(hydrogen.prediction_is_plausible_for_comparison(656.0))
+        self.assertFalse(hydrogen.prediction_is_plausible_for_comparison(65.6))
+        self.assertFalse(hydrogen.prediction_is_plausible_for_comparison(6560.0))
+
+    def test_hydrogen_barcode_is_non_numerical_and_transition_labels_remain_optional(self) -> None:
+        barcode = hydrogen.render_balmer_barcode_svg()
+        self.assertIn("hydrogen-barcode-svg", barcode)
+        self.assertNotIn("tick-label", barcode)
+        self.assertNotIn("3→2", barcode)
 
     def test_transition_label_reveal_uses_authoritative_metadata(self) -> None:
-        rendered = hydrogen.render_balmer_detail_svg(show_transition_labels=True)
+        target = hydrogen.observed_feature_for_transition(3, 2)
+        rendered = hydrogen.render_local_comparison_svg(
+            prediction_nm=650.0,
+            observed_feature=target,
+            show_transition_labels=True,
+        )
         for feature in hydrogen.balmer_detail_features():
-            self.assertIn(hydrogen.transition_label(feature), rendered)
+            if 640 <= float(feature["wavelength_nm"]) <= 670:
+                self.assertIn(hydrogen.transition_label(feature), rendered)
 
     def test_series_reference_views_are_loaded_from_existing_data(self) -> None:
         self.assertEqual((90.0, 1900.0), hydrogen.series_overview_bounds())

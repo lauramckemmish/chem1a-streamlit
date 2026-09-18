@@ -6,6 +6,7 @@ not calculate wavelengths, model energy levels, or encode line intensity.
 
 from __future__ import annotations
 
+from decimal import Decimal, ROUND_HALF_UP
 from html import escape
 from math import ceil, floor
 
@@ -13,6 +14,11 @@ from experiences.w01_spectroscopy import data, spectrum
 
 
 SERIES_REGIONS = {"Lyman": "UV", "Balmer": "visible", "Paschen": "IR"}
+PLAUSIBLE_PREDICTION_MIN_NM = 300.0
+PLAUSIBLE_PREDICTION_MAX_NM = 900.0
+MINIMUM_COMPARISON_WINDOW_NM = 20.0
+COMPARISON_WINDOW_PADDING_NM = 10.0
+LINE_MATCH_TOLERANCE_NM = 1.0
 
 
 def balmer_detail_features() -> list[dict[str, str]]:
@@ -25,9 +31,138 @@ def transition_label(feature: dict[str, str]) -> str:
     return f"{feature['upper_n']}→{feature['lower_n']}"
 
 
-def prediction_is_in_display_range(wavelength_nm: float) -> bool:
-    """Check whether a positive learner prediction can be placed on the detail axis."""
-    return 0 < wavelength_nm and spectrum.WAVELENGTH_MIN_NM <= wavelength_nm <= spectrum.WAVELENGTH_MAX_NM
+def observed_feature_for_transition(from_n: int, to_n: int) -> dict[str, str] | None:
+    """Find a stored selected Balmer feature without deriving a wavelength."""
+    return next(
+        (
+            feature
+            for feature in balmer_detail_features()
+            if int(feature["upper_n"]) == from_n and int(feature["lower_n"]) == to_n
+        ),
+        None,
+    )
+
+
+def display_wavelength_nm(wavelength_nm: float) -> str:
+    """Return the agreed learner-facing nearest-nanometre display value."""
+    return str(Decimal(str(wavelength_nm)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+
+
+def prediction_is_plausible_for_comparison(wavelength_nm: float) -> bool:
+    """Check bounded interface plausibility, not a physical spectral limit."""
+    return PLAUSIBLE_PREDICTION_MIN_NM <= wavelength_nm <= PLAUSIBLE_PREDICTION_MAX_NM
+
+
+def adaptive_comparison_window(prediction_nm: float, observed_nm: float) -> tuple[float, float]:
+    """Return the deterministic local window containing both comparison marks."""
+    separation = abs(prediction_nm - observed_nm)
+    width = max(MINIMUM_COMPARISON_WINDOW_NM, separation + COMPARISON_WINDOW_PADDING_NM)
+    centre = (prediction_nm + observed_nm) / 2
+    return centre - width / 2, centre + width / 2
+
+
+def prediction_match(feature: dict[str, str], prediction_nm: float) -> tuple[str, dict[str, str] | None]:
+    """Classify agreement using only stored selected Balmer reference features."""
+    observed_nm = float(feature["wavelength_nm"])
+    if abs(prediction_nm - observed_nm) <= LINE_MATCH_TOLERANCE_NM:
+        return "target", None
+    for other_feature in balmer_detail_features():
+        if other_feature["feature_id"] != feature["feature_id"] and abs(
+            prediction_nm - float(other_feature["wavelength_nm"])
+        ) <= LINE_MATCH_TOLERANCE_NM:
+            return "other_line", other_feature
+    return "mismatch", None
+
+
+def render_balmer_barcode_svg() -> str:
+    """Render the six stored Balmer features as a non-numerical phenomenon view."""
+    features = balmer_detail_features()
+    field_top, field_height = 8, 66
+    lines = "".join(
+        f'<line x1="{spectrum.wavelength_x(float(feature["wavelength_nm"])):.2f}" y1="{field_top + 7}" '
+        f'x2="{spectrum.wavelength_x(float(feature["wavelength_nm"])):.2f}" y2="{field_top + field_height - 7}" '
+        f'stroke="{spectrum.wavelength_to_colour(float(feature["wavelength_nm"]))}" class="visual-spectral-line" />'
+        for feature in features
+    )
+    return f'''<style>
+.hydrogen-barcode-svg {{ display:block; width:100%; height:auto; background:#ffffff; font-family:"Source Sans Pro",Arial,sans-serif; }}
+.visual-field {{ fill:#080b12; stroke:#1f2937; stroke-width:1; }}
+.visual-species {{ fill:#17212b; font-size:19px; font-weight:650; }}
+.visual-spectral-line {{ stroke-width:2.6; vector-effect:non-scaling-stroke; stroke-linecap:square; }}
+</style>
+<svg class="hydrogen-barcode-svg" viewBox="0 0 1200 84" role="img" aria-label="Selected hydrogen Balmer visual spectrum">
+<title>Selected hydrogen visual spectrum</title>
+<desc>A dark field shows six equal-geometry coloured hydrogen spectral lines. Wavelength values and transition labels are not shown.</desc>
+<text x="18" y="43" class="visual-species">Hydrogen</text>
+<rect x="{spectrum.PLOT_LEFT}" y="{field_top}" width="{spectrum.PLOT_RIGHT - spectrum.PLOT_LEFT}" height="{field_height}" class="visual-field" />
+{lines}</svg>'''
+
+
+def render_local_comparison_svg(
+    *,
+    prediction_nm: float,
+    observed_feature: dict[str, str],
+    show_transition_labels: bool = False,
+) -> str:
+    """Render stored Balmer evidence in a local axis that includes learner and target."""
+    observed_nm = float(observed_feature["wavelength_nm"])
+    minimum, maximum = adaptive_comparison_window(prediction_nm, observed_nm)
+    baseline, line_top = 120, 56
+    visible_features = [
+        feature
+        for feature in balmer_detail_features()
+        if minimum <= float(feature["wavelength_nm"]) <= maximum
+    ]
+    lines = "".join(
+        f'<line x1="{_x(float(feature["wavelength_nm"]), minimum, maximum):.2f}" y1="{line_top}" '
+        f'x2="{_x(float(feature["wavelength_nm"]), minimum, maximum):.2f}" y2="{baseline}" '
+        f'stroke="{spectrum.wavelength_to_colour(float(feature["wavelength_nm"]))}" '
+        f'class="{"target-line" if feature["feature_id"] == observed_feature["feature_id"] else "spectral-line"}" />'
+        for feature in visible_features
+    )
+    other_labels = ""
+    if show_transition_labels:
+        other_labels = "".join(
+            f'<text x="{_x(float(feature["wavelength_nm"]), minimum, maximum):.2f}" '
+            f'y="{42 if index % 2 == 0 else 55}" class="transition-label">{transition_label(feature)}</text>'
+            for index, feature in enumerate(visible_features)
+            if feature["feature_id"] != observed_feature["feature_id"]
+        )
+    observed_x = _x(observed_nm, minimum, maximum)
+    prediction_x = _x(prediction_nm, minimum, maximum)
+    tick_values = (minimum, (minimum + maximum) / 2, maximum)
+    ticks = "".join(
+        f'<line x1="{_x(value, minimum, maximum):.2f}" y1="{baseline}" '
+        f'x2="{_x(value, minimum, maximum):.2f}" y2="{baseline + 8}" class="tick" />'
+        f'<text x="{_x(value, minimum, maximum):.2f}" y="{baseline + 27}" class="tick-label">'
+        f'{display_wavelength_nm(value)}</text>'
+        for value in tick_values
+    )
+    observed_anchor = "end" if observed_x > spectrum.PLOT_RIGHT - 190 else "start"
+    prediction_anchor = "end" if prediction_x > spectrum.PLOT_RIGHT - 190 else "start"
+    description = (
+        f"Local hydrogen comparison from {display_wavelength_nm(minimum)} to {display_wavelength_nm(maximum)} nm. "
+        f"The learner prediction is {display_wavelength_nm(prediction_nm)} nm and the observed target is "
+        f"{display_wavelength_nm(observed_nm)} nm."
+    )
+    return f'''<style>
+.hydrogen-local-svg {{ display:block; width:100%; height:auto; background:#ffffff; font-family:"Source Sans Pro",Arial,sans-serif; }}
+.axis,.tick {{ stroke:#64748b; stroke-width:1.3; }} .tick-label {{ fill:#334155; font-size:15px; text-anchor:middle; }}
+.spectral-line {{ stroke-width:1.6; vector-effect:non-scaling-stroke; }} .target-line {{ stroke-width:3; vector-effect:non-scaling-stroke; }}
+.transition-label {{ fill:#17212b; font-size:13px; font-weight:650; text-anchor:middle; }}
+.prediction-marker {{ stroke:#111827; stroke-width:2.4; stroke-dasharray:5 3; vector-effect:non-scaling-stroke; }}
+.prediction-dot {{ fill:#ffffff; stroke:#111827; stroke-width:2.2; vector-effect:non-scaling-stroke; }}
+.observed-label,.prediction-label {{ fill:#111827; font-size:13px; font-weight:650; }}
+</style>
+<svg class="hydrogen-local-svg" viewBox="0 0 1200 170" role="img" aria-label="Local hydrogen prediction and observed-line comparison">
+<title>Hydrogen prediction and observed-line comparison</title><desc>{escape(description)}</desc>
+<line x1="{spectrum.PLOT_LEFT}" y1="{baseline}" x2="{spectrum.PLOT_RIGHT}" y2="{baseline}" class="axis" />
+{ticks}{lines}{other_labels}
+<line x1="{prediction_x:.2f}" y1="{line_top - 4}" x2="{prediction_x:.2f}" y2="{baseline}" class="prediction-marker" />
+<circle cx="{prediction_x:.2f}" cy="{line_top - 4}" r="4" class="prediction-dot" />
+<text x="{prediction_x - 8 if prediction_anchor == "end" else prediction_x + 8:.2f}" y="20" text-anchor="{prediction_anchor}" class="prediction-label">Your prediction · {display_wavelength_nm(prediction_nm)} nm</text>
+<text x="{observed_x - 8 if observed_anchor == "end" else observed_x + 8:.2f}" y="38" text-anchor="{observed_anchor}" class="observed-label">Observed {transition_label(observed_feature)} · {display_wavelength_nm(observed_nm)} nm</text>
+</svg>'''
 
 
 def series_features(series: str) -> list[dict[str, str]]:

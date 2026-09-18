@@ -138,16 +138,31 @@ class StageOneAppTests(unittest.TestCase):
             self.checkbox(label).set_value(False).run()
         self.assertEqual(["Choose at least one spectrum to keep in view."], [notice.value for notice in self.app.info])
 
-    def test_hydrogen_evidence_is_hidden_until_a_valid_prediction_then_persists(self) -> None:
-        self.assertEqual(["Your predicted wavelength (nm)"], [control.label for control in self.app.number_input])
+    def hydrogen_input(self, label: str):
+        return next(control for control in self.app.number_input if control.label == label)
+
+    def test_hydrogen_starts_with_a_barcode_and_transition_inputs(self) -> None:
+        self.assertTrue(
+            all(
+                label in [control.label for control in self.app.number_input]
+                for label in ("From level n", "To level n", "Your predicted wavelength (nm)")
+            )
+        )
+        self.assertEqual(3, self.hydrogen_input("From level n").value)
+        self.assertEqual(2, self.hydrogen_input("To level n").value)
         initial = [block.value for block in self.app.markdown]
         self.assertTrue(any("You have a predicted wavelength. Now test the model against the hydrogen spectrum." in block for block in initial))
-        self.assertFalse(any("Observed hydrogen Balmer features" in block for block in initial))
+        self.assertTrue(any("hydrogen-barcode-svg" in block for block in initial))
+        self.assertFalse(any("hydrogen-local-svg" in block for block in initial))
+        self.assertIn("Nearest nm is accurate enough for this comparison.", [caption.value for caption in self.app.caption])
         self.assertNotIn("Show transition labels", [control.label for control in self.app.checkbox])
-        self.app.number_input[0].set_value(650.123).run()
+
+    def test_hydrogen_valid_prediction_reveals_local_evidence_and_persists(self) -> None:
+        self.hydrogen_input("Your predicted wavelength (nm)").set_value(656.0).run()
         self.button("Plot my prediction").click().run()
-        rendered = next(block.value for block in self.app.markdown if "Your prediction: 650.123 nm" in block.value)
-        self.assertIn("Your prediction: 650.123 nm", rendered)
+        rendered = next(block.value for block in self.app.markdown if "hydrogen-local-svg" in block.value)
+        self.assertIn("Your prediction · 656 nm", rendered)
+        self.assertIn("Observed 3→2 · 656 nm", rendered)
         self.assertIn("Show transition labels", [control.label for control in self.app.checkbox])
         self.assertTrue(any("This is the test: does your prediction match an observed line?" in block.value for block in self.app.markdown))
         self.assertIn(
@@ -160,21 +175,52 @@ class StageOneAppTests(unittest.TestCase):
         self.assertFalse(any("The overview locates the series. Use the local views below to inspect selected reference lines." in block.value for block in self.app.markdown))
         self.assertTrue(all(label in [control.label for control in self.app.checkbox] for label in ("Lyman · UV", "Balmer · visible", "Paschen · IR")))
         self.app.run()
-        self.assertTrue(any("Observed hydrogen Balmer features" in block.value for block in self.app.markdown))
+        self.assertTrue(any("hydrogen-local-svg" in block.value for block in self.app.markdown))
 
-    def test_positive_out_of_range_prediction_reveals_evidence_without_substitution(self) -> None:
-        self.app.number_input[0].set_value(820.0).run()
+    def test_hydrogen_rejects_invalid_and_unsupported_transitions_without_revealing_evidence(self) -> None:
+        self.hydrogen_input("From level n").set_value(2).run()
+        self.hydrogen_input("To level n").set_value(3).run()
+        self.hydrogen_input("Your predicted wavelength (nm)").set_value(656.0).run()
         self.button("Plot my prediction").click().run()
-        self.assertTrue(any("Observed hydrogen Balmer features" in block.value for block in self.app.markdown))
-        self.assertFalse(any("Your prediction: 820.000 nm" in block.value for block in self.app.markdown))
-        self.assertIn("Your prediction lands outside the displayed 380–780 nm range.", [notice.value for notice in self.app.info])
+        self.assertIn("For emission, the starting level n must be greater than the ending level.", [notice.value for notice in self.app.info])
+        self.assertFalse(any("hydrogen-local-svg" in block.value for block in self.app.markdown))
+        self.hydrogen_input("From level n").set_value(9).run()
+        self.hydrogen_input("To level n").set_value(2).run()
+        self.button("Plot my prediction").click().run()
+        self.assertIn(
+            "This comparison currently uses the selected Balmer transitions available in the app.",
+            [notice.value for notice in self.app.info],
+        )
+
+    def test_hydrogen_unit_range_guidance_does_not_reveal_evidence(self) -> None:
+        self.hydrogen_input("Your predicted wavelength (nm)").set_value(6560.0).run()
+        self.button("Plot my prediction").click().run()
+        self.assertIn(
+            "This value is well outside the wavelength range expected for this comparison. Check that your final wavelength is in nm.",
+            [notice.value for notice in self.app.info],
+        )
+        self.assertFalse(any("hydrogen-local-svg" in block.value for block in self.app.markdown))
 
     def test_hydrogen_prediction_messages_are_concise_and_neutral(self) -> None:
         self.button("Plot my prediction").click().run()
         self.assertIn("Enter your predicted wavelength in nm first.", [notice.value for notice in self.app.info])
-        self.app.number_input[0].set_value(-1.0).run()
+        self.hydrogen_input("Your predicted wavelength (nm)").set_value(-1.0).run()
         self.button("Plot my prediction").click().run()
         self.assertIn("Enter a positive wavelength in nm.", [notice.value for notice in self.app.info])
+
+    def test_hydrogen_mismatch_diagnostics_use_stored_lines_and_replace_submissions(self) -> None:
+        self.hydrogen_input("Your predicted wavelength (nm)").set_value(486.0).run()
+        self.button("Plot my prediction").click().run()
+        self.assertTrue(any("4→2 at 486 nm" in notice.value for notice in self.app.info))
+        self.hydrogen_input("Your predicted wavelength (nm)").set_value(650.0).run()
+        self.button("Plot my prediction").click().run()
+        self.assertTrue(any("Check ΔE, your units, and the wavelength conversion." in notice.value for notice in self.app.info))
+        self.hydrogen_input("From level n").set_value(4).run()
+        self.hydrogen_input("To level n").set_value(2).run()
+        self.hydrogen_input("Your predicted wavelength (nm)").set_value(486.0).run()
+        self.button("Plot my prediction").click().run()
+        rendered = next(block.value for block in self.app.markdown if "hydrogen-local-svg" in block.value)
+        self.assertIn("Observed 4→2 · 486 nm", rendered)
 
     def test_read_spectrum_has_aligned_representations_and_native_trace_control(self) -> None:
         self.assertEqual(["Choose a line to trace"], [control.label for control in self.app.selectbox])
