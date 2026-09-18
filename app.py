@@ -35,7 +35,6 @@ def hydrogen_evidence_revealed() -> bool:
 def render_explore_spectra() -> None:
     """Render the established first spectroscopy phenomenon surface."""
     st.header("Explore atomic spectra")
-    st.write("Compare the patterns in these atomic spectra.")
     selected_species = [
         symbol
         for symbol in spectrum.SPECIES_ORDER
@@ -46,16 +45,16 @@ def render_explore_spectra() -> None:
         wavelength_revealed, absorption_revealed = explore_reveal_state()
         if wavelength_revealed:
             st.markdown(spectrum.render_comparison_svg(selected_species), unsafe_allow_html=True)
-            st.caption("Colour is an illustrative wavelength cue. The labelled horizontal position is the evidence to compare.")
+            st.caption("Horizontal position gives the wavelength. Colour is a visual cue.")
             if "Na" in selected_species:
-                st.caption("Sodium includes two selected lines at 588.995 nm and 589.592 nm; on this shared scale they sit very close together.")
+                st.caption("Sodium’s two selected lines are at 588.995 and 589.592 nm. They almost overlap on this scale.")
         else:
             st.markdown(spectrum.render_visual_comparison_svg(selected_species), unsafe_allow_html=True)
-            st.caption("Colour is an illustrative wavelength cue. Each line marks a selected spectral feature.")
+            st.caption("Colour is a wavelength cue. The pattern of line positions is what to compare.")
         compare_prompt("What changes? What stays the same?")
 
     else:
-        st.info("Choose an atom to keep a spectrum in view.")
+        st.info("Choose at least one spectrum to keep in view.")
 
     with st.container(key="chem1a_stage_controls"):
         st.markdown('<p class="chem1a-control-label">Spectra in view</p>', unsafe_allow_html=True)
@@ -72,12 +71,12 @@ def render_explore_spectra() -> None:
     if selected_species:
         if not wavelength_revealed:
             hard_reveal(
-                "Return to these same patterns and add a wavelength scale.",
+                "Now add a wavelength scale to the same patterns.",
                 key="wavelength_scale",
                 reveal_label="Show wavelength scale",
             )
         elif hard_reveal(
-            "Return to these same atoms and compare their absorption features.",
+            "Now compare the same atoms in absorption.",
             key="absorption",
             reveal_label="Reveal absorption spectra",
         ):

@@ -38,6 +38,15 @@ class StageOneAppTests(unittest.TestCase):
             self.assertIn(species, rendered)
         self.assertNotIn("tick-label", rendered)
         self.assertIn("Show wavelength scale", [control.label for control in self.app.button])
+        page_copy = [block.value for block in self.app.markdown]
+        self.assertFalse(any("Compare the patterns in these atomic spectra." in block for block in page_copy))
+        self.assertIn(
+            "Colour is a wavelength cue. The pattern of line positions is what to compare.",
+            [caption.value for caption in self.app.caption],
+        )
+        self.assertTrue(any("What changes? What stays the same?" in block for block in page_copy))
+        self.assertTrue(any("Spectra in view" in block for block in page_copy))
+        self.assertTrue(any("Now add a wavelength scale to the same patterns." in block for block in page_copy))
 
     def test_focus_controls_remove_only_the_unchecked_visual_spectrum(self) -> None:
         self.checkbox("Helium").set_value(False).run()
@@ -54,6 +63,16 @@ class StageOneAppTests(unittest.TestCase):
         self.assertIn("tick-label", rendered)
         self.assertFalse(any("Selected atomic visual emission spectra" in block.value for block in self.app.markdown))
         self.assertIn("Reveal absorption spectra", [control.label for control in self.app.button])
+        page_copy = [block.value for block in self.app.markdown]
+        self.assertIn(
+            "Horizontal position gives the wavelength. Colour is a visual cue.",
+            [caption.value for caption in self.app.caption],
+        )
+        self.assertIn(
+            "Sodium’s two selected lines are at 588.995 and 589.592 nm. They almost overlap on this scale.",
+            [caption.value for caption in self.app.caption],
+        )
+        self.assertTrue(any("Now compare the same atoms in absorption." in block for block in page_copy))
         self.app.run()
         self.assertTrue(any("Selected atomic emission-line positions" in block.value for block in self.app.markdown))
 
@@ -108,7 +127,7 @@ class StageOneAppTests(unittest.TestCase):
     def test_no_selected_atom_has_a_neutral_prompt(self) -> None:
         for label in ("Hydrogen", "Helium", "Sodium", "Neon", "Mercury"):
             self.checkbox(label).set_value(False).run()
-        self.assertEqual(["Choose an atom to keep a spectrum in view."], [notice.value for notice in self.app.info])
+        self.assertEqual(["Choose at least one spectrum to keep in view."], [notice.value for notice in self.app.info])
 
     def test_hydrogen_evidence_is_hidden_until_a_valid_prediction_then_persists(self) -> None:
         self.assertEqual(["Your predicted wavelength (nm)"], [control.label for control in self.app.number_input])
