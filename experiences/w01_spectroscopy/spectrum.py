@@ -1,8 +1,8 @@
 """Position-only SVG line spectra for the bounded Week 01 comparison data.
 
-Colour is a deterministic, illustrative wavelength cue. Horizontal position on the
-labelled 380–780 nm axis remains the authoritative representation; line marks have
-uniform geometry and do not encode source intensity.
+The visual barcode and quantitative line-spectrum renderers intentionally share the
+same curated features and wavelength-to-position mapping. Colour is a deterministic,
+illustrative wavelength cue; line geometry never encodes source intensity.
 """
 
 from __future__ import annotations
@@ -80,7 +80,7 @@ def combined_absorption_features_for_species(species: Iterable[str]) -> list[dic
 
 
 def _render_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[str, str]) -> str:
-    """Render equal-geometry, shared-axis barcode rows."""
+    """Render equal-geometry quantitative rows on the shared wavelength axis."""
     row_height = 96
     height = 62 + row_height * len(rows)
     svg_rows: list[str] = []
@@ -123,9 +123,55 @@ def _render_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[str, str
 
 
 def render_comparison_svg(species: Iterable[str]) -> str:
-    """Render separate selected-atom barcode rows on the shared Stage 1 axis."""
+    """Render separate selected-atom quantitative rows on the shared Stage 1 axis."""
     rows = features_for_species(species)
     return _render_rows_svg(rows, SPECIES_NAMES)
+
+
+def _render_visual_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[str, str]) -> str:
+    """Render dark-field visual spectra using the shared feature positions.
+
+    This deliberately omits axes and numerical labels for the initial phenomenon-first
+    view. Each line has identical geometry, so brightness and height do not imply
+    relative line strength.
+    """
+    row_height = 82
+    height = 20 + row_height * len(rows)
+    svg_rows: list[str] = []
+    for index, (symbol, features) in enumerate(rows.items()):
+        top = 10 + index * row_height
+        field_top = top
+        field_height = 60
+        values = ", ".join(f"{float(feature['wavelength_nm']):.3f}" for feature in features)
+        lines = "".join(
+            f'<line x1="{wavelength_x(float(feature["wavelength_nm"])):.2f}" y1="{field_top + 7}" '
+            f'x2="{wavelength_x(float(feature["wavelength_nm"])):.2f}" y2="{field_top + field_height - 7}" '
+            f'stroke="{wavelength_to_colour(float(feature["wavelength_nm"]))}" class="visual-spectral-line" />'
+            for feature in features
+        )
+        svg_rows.append(
+            f'<g aria-label="{escape(names[symbol])}: {values} nm">'
+            f'<text x="18" y="{field_top + 35}" class="visual-species">{escape(names[symbol])}</text>'
+            f'<rect x="{PLOT_LEFT}" y="{field_top}" width="{PLOT_RIGHT - PLOT_LEFT}" height="{field_height}" '
+            f'class="visual-field" />'
+            f'{lines}</g>'
+        )
+    return f'''<style>
+.visual-spectrum-svg {{ display: block; width: 100%; height: auto; background: #ffffff; font-family: "Source Sans Pro", Arial, sans-serif; color: #17212b; }}
+.visual-field {{ fill: #080b12; stroke: #1f2937; stroke-width: 1; }}
+.visual-species {{ fill: #17212b; font-size: 19px; font-weight: 650; }}
+.visual-spectral-line {{ stroke-width: 2.4; vector-effect: non-scaling-stroke; stroke-linecap: square; }}
+</style>
+<svg class="visual-spectrum-svg" viewBox="0 0 1200 {height}" role="img" aria-label="Selected atomic visual emission spectra">
+<title>Selected atomic visual emission spectra</title>
+<desc>Each dark field contains equal-geometry coloured emission lines at selected shared wavelength positions. No wavelength axis is shown in this visual spectrum.</desc>
+{''.join(svg_rows)}
+</svg>'''
+
+
+def render_visual_comparison_svg(species: Iterable[str]) -> str:
+    """Render initial dark-field visual spectra from the Stage 1 feature layer."""
+    return _render_visual_rows_svg(features_for_species(species), SPECIES_NAMES)
 
 
 def render_combined_svg(species: Iterable[str]) -> str:

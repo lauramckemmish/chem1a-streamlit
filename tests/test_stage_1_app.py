@@ -32,17 +32,35 @@ class StageOneAppTests(unittest.TestCase):
         self.assertNotIn("Separate spectra", labels)
         self.assertFalse(any("Combined selected lines" in block.value for block in self.app.markdown))
 
-    def test_selected_atoms_render_as_separate_aligned_rows_from_scientific_data(self) -> None:
+    def test_default_explore_is_a_visual_barcode_without_wavelength_axis(self) -> None:
+        rendered = next(block.value for block in self.app.markdown if "Selected atomic visual emission spectra" in block.value)
+        self.assertIn("visual-field", rendered)
+        self.assertIn("Hydrogen", rendered)
+        self.assertNotIn("tick-label", rendered)
+        self.assertIn("Show wavelength scale", [control.label for control in self.app.button])
+
+    def test_selected_atoms_render_as_separate_visual_rows_from_scientific_data(self) -> None:
         self.checkbox("Helium").set_value(True).run()
-        rendered = next(block.value for block in self.app.markdown if "Selected atomic emission-line positions" in block.value)
+        rendered = next(block.value for block in self.app.markdown if "Selected atomic visual emission spectra" in block.value)
         self.assertIn("Hydrogen", rendered)
         self.assertIn("Helium", rendered)
-        self.assertIn("380 to 780 nanometre scale", rendered)
         self.assertIn("656.285", rendered)
         self.assertIn("587.561", rendered)
 
-    def test_absorption_is_hidden_until_the_hard_reveal_then_persists(self) -> None:
+    def test_wavelength_reveal_transforms_to_quantitative_spectrum_and_persists(self) -> None:
+        self.button("Show wavelength scale").click().run()
+        rendered = next(block.value for block in self.app.markdown if "Selected atomic emission-line positions" in block.value)
+        self.assertIn("380 to 780 nanometre scale", rendered)
+        self.assertIn("tick-label", rendered)
+        self.assertFalse(any("Selected atomic visual emission spectra" in block.value for block in self.app.markdown))
+        self.assertIn("Reveal absorption spectra", [control.label for control in self.app.button])
+        self.app.run()
+        self.assertTrue(any("Selected atomic emission-line positions" in block.value for block in self.app.markdown))
+
+    def test_absorption_is_not_available_until_wavelength_reveal_then_persists(self) -> None:
         self.assertFalse(any("Selected atomic absorption-line positions" in block.value for block in self.app.markdown))
+        self.assertNotIn("Reveal absorption spectra", [control.label for control in self.app.button])
+        self.button("Show wavelength scale").click().run()
         self.button("Reveal absorption spectra").click().run()
         rendered = [block.value for block in self.app.markdown if "Selected atomic absorption-line positions" in block.value]
         self.assertEqual(1, len(rendered))
@@ -52,6 +70,7 @@ class StageOneAppTests(unittest.TestCase):
 
     def test_absorption_pairs_each_selected_atom_with_its_own_emission(self) -> None:
         self.checkbox("Sodium").set_value(True).run()
+        self.button("Show wavelength scale").click().run()
         self.button("Reveal absorption spectra").click().run()
         rendered = [block.value for block in self.app.markdown]
         self.assertTrue(any("Hydrogen — emission" in block for block in rendered))
@@ -62,6 +81,14 @@ class StageOneAppTests(unittest.TestCase):
         self.assertEqual(1, len(absorption))
         self.assertIn("588.995", absorption[0])
         self.assertIn("589.592", absorption[0])
+
+    def test_added_atoms_use_the_current_quantitative_absorption_state(self) -> None:
+        self.button("Show wavelength scale").click().run()
+        self.button("Reveal absorption spectra").click().run()
+        self.checkbox("Sodium").set_value(True).run()
+        rendered = [block.value for block in self.app.markdown]
+        self.assertTrue(any("Sodium: 588.995, 589.592 nm" in block for block in rendered))
+        self.assertTrue(any("Sodium absorption" in block for block in rendered))
 
     def test_no_selected_atom_has_a_neutral_prompt(self) -> None:
         self.checkbox("Hydrogen").set_value(False).run()

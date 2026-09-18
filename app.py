@@ -14,10 +14,20 @@ def explore_control_value(control_key: str, default: bool) -> bool:
     return bool(st.session_state.get(f"saved_{control_key}", default))
 
 
+def explore_reveal_state() -> tuple[bool, bool]:
+    """Return the valid global representation state for the Explore surface."""
+    wavelength_revealed = bool(st.session_state.setdefault("wavelength_scale", False))
+    absorption_revealed = bool(st.session_state.setdefault("absorption", False))
+    if absorption_revealed and not wavelength_revealed:
+        st.session_state["wavelength_scale"] = True
+        wavelength_revealed = True
+    return wavelength_revealed, absorption_revealed
+
+
 def render_explore_spectra() -> None:
     """Render the established first spectroscopy phenomenon surface."""
     st.header("Explore atomic spectra")
-    st.write("Select atoms to add their selected prominent lines. Every view uses the same wavelength scale.")
+    st.write("Select atoms to add their selected prominent lines.")
 
     with st.container(key="chem1a_stage_controls"):
         st.markdown('<p class="chem1a-control-label">Atoms to compare</p>', unsafe_allow_html=True)
@@ -35,13 +45,24 @@ def render_explore_spectra() -> None:
         ]
 
     if selected_species:
-        st.markdown(spectrum.render_comparison_svg(selected_species), unsafe_allow_html=True)
-        st.caption("Colour is an illustrative wavelength cue. The labelled horizontal position is the evidence to compare.")
-        if "Na" in selected_species:
-            st.caption("Sodium includes two selected lines at 588.995 nm and 589.592 nm; on this shared scale they sit very close together.")
+        wavelength_revealed, absorption_revealed = explore_reveal_state()
+        if wavelength_revealed:
+            st.markdown(spectrum.render_comparison_svg(selected_species), unsafe_allow_html=True)
+            st.caption("Colour is an illustrative wavelength cue. The labelled horizontal position is the evidence to compare.")
+            if "Na" in selected_species:
+                st.caption("Sodium includes two selected lines at 588.995 nm and 589.592 nm; on this shared scale they sit very close together.")
+        else:
+            st.markdown(spectrum.render_visual_comparison_svg(selected_species), unsafe_allow_html=True)
+            st.caption("Colour is an illustrative wavelength cue. Each line marks a selected spectral feature.")
         compare_prompt("What changes? What stays the same?")
 
-        if hard_reveal(
+        if not wavelength_revealed:
+            hard_reveal(
+                "Return to these same patterns and add a wavelength scale.",
+                key="wavelength_scale",
+                reveal_label="Show wavelength scale",
+            )
+        elif hard_reveal(
             "Return to these same atoms and compare their absorption features.",
             key="absorption",
             reveal_label="Reveal absorption spectra",

@@ -68,13 +68,17 @@ Do not initially explain the origin of line structure or place an energy-level/R
 
 ### Reused Screen 1 — Explore spectra
 
-Screen 1 is one reusable phenomenon surface. On the first visit (Move A), learners inspect emission spectra only. Hydrogen alone is the default starting spectrum; each selected comparison atom adds one vertically aligned individual spectrum. On the second visit (Move C), after workshop work reconnecting wavelength, frequency and photon energy, learners intentionally reveal the absorption comparison.
+**DECISION:** Explore spectra is one reusable phenomenon surface with an intentional representational progression. On the first visit (Move A), learners inspect visual/barcode emission spectra: a dark field with bright coloured lines, where the phenomenon and pattern come before numerical measurement. Hydrogen alone is the default starting spectrum; each selected comparison atom adds one vertically aligned individual spectrum.
+
+After workshop work reconnecting wavelength, frequency and photon energy (Move B, outside the app), learners return in Move C and intentionally reveal the quantitative wavelength representation. The same selected features are transformed/enriched into a labelled 380–780 nm line spectrum; this is not an arbitrary display preference or a duplicated second spectrum for every atom. The barcode and wavelength-axis spectrum are scientifically close but cognitively distinct: the first asks, “What does the emitted light look like?” while the second asks, “Where exactly are those features?”
+
+Only after that wavelength reveal can learners intentionally reveal the absorption comparison. Each selected atom's quantitative emission and absorption representations are paired together. The absorption reveal cannot precede the wavelength representation, and both reveals persist for the session.
 
 For this bounded first-year representation, absorption deliberately uses the same selected teaching-feature wavelengths as emission. It is a comparison of characteristic positions, not a model of relative line strength. The absorption display is a continuous illustrative visible-spectrum band with equal dark lines at those positions.
 
 Separate aligned atomic spectra are the current core representation. Combined spectra are removed from the learner-facing design and parked only as a possible future composition/mixture feature if a real learning need emerges. The hard reveal persists for the session; after it is activated, each selected atom's emission and absorption representations are paired together. Screen 1 stops before explanatory models, transitions, calculations, or line assignments.
 
-Once multiple real learner surfaces exist, tab navigation is the app-stage grammar. The sidebar provides shared CHEM 1A shell and verified resource/source context; it is not stage navigation.
+The wider representational progression is visual/barcode spectrum → quantitative wavelength line spectrum → later intensity-vs-wavelength graph. The graph belongs to the future Read the spectrum surface and is not specified in detail here. Once multiple real learner surfaces exist, tab navigation is the app-stage grammar. The sidebar provides shared CHEM 1A shell and verified resource/source context; it is not stage navigation.
 
 ## Stage 2 — Hydrogen
 

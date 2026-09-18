@@ -46,7 +46,7 @@ def apply_shared_visual_system() -> None:
             margin-top: 0.9rem;
             padding: 0.7rem 1rem 0.55rem;
         }}
-        .st-key-chem1a_hard_reveal_absorption {{
+        .st-key-chem1a_hard_reveal_wavelength_scale, .st-key-chem1a_hard_reveal_absorption {{
             border-left: 3px solid var(--chem1a-purple);
             margin: 0.9rem 0 0.8rem;
             padding: 0.2rem 0 0.2rem 0.8rem;

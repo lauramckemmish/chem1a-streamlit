@@ -69,6 +69,21 @@ class SpectroscopyDataTests(unittest.TestCase):
         self.assertEqual(spectrum.PLOT_LEFT, spectrum.wavelength_x(380.0))
         self.assertEqual(spectrum.PLOT_RIGHT, spectrum.wavelength_x(780.0))
 
+    def test_visual_and_quantitative_renderers_share_features_and_coordinates(self) -> None:
+        species = ["H", "Na"]
+        selected_features = spectrum.features_for_species(species)
+        visual = spectrum.render_visual_comparison_svg(species)
+        quantitative = spectrum.render_comparison_svg(species)
+        self.assertTrue(
+            all(feature in data.stage_1_comparison_features() for row in selected_features.values() for feature in row)
+        )
+        for feature in selected_features["Na"]:
+            x = spectrum.wavelength_x(float(feature["wavelength_nm"]))
+            self.assertIn(f'x1="{x:.2f}"', visual)
+            self.assertIn(f'x1="{x:.2f}"', quantitative)
+        self.assertNotIn("tick-label", visual)
+        self.assertIn("tick-label", quantitative)
+
     def test_stage_1_renderer_rejects_unapproved_species(self) -> None:
         with self.assertRaises(ValueError):
             spectrum.features_for_species(["He+"])
