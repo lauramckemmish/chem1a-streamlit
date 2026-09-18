@@ -22,4 +22,6 @@ The Week 01 design source is [CHEM1A_W01_SPECTROSCOPY_DESIGN.md](experiences/w01
 
 The Week 01 scientific data and provenance layer is in [data/spectroscopy](data/spectroscopy), with its source decisions recorded in [PROVENANCE.md](data/spectroscopy/PROVENANCE.md).
 
+The app shell adapts shared UNSW educational-app visual and interaction conventions from the canonical starter. CHEM 1A pedagogy and scientific data remain experience-local; school-specific curriculum machinery is intentionally excluded.
+
 Add future experiences only when they have been genuinely designed and are needed.

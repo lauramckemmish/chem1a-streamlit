@@ -1,6 +1,7 @@
 import unittest
 from decimal import Decimal
 
+from chem1a_ui import UNSW_COLOURS
 from experiences.w01_spectroscopy import data
 from experiences.w01_spectroscopy import spectrum
 
@@ -70,6 +71,14 @@ class SpectroscopyDataTests(unittest.TestCase):
     def test_stage_1_renderer_rejects_unapproved_species(self) -> None:
         with self.assertRaises(ValueError):
             spectrum.features_for_species(["He+"])
+
+    def test_stage_1_default_starts_with_hydrogen_only(self) -> None:
+        self.assertEqual(("H",), spectrum.DEFAULT_SELECTED_SPECIES)
+        self.assertTrue(set(spectrum.DEFAULT_SELECTED_SPECIES) <= set(spectrum.SPECIES_ORDER))
+
+    def test_shared_visual_system_uses_the_unified_unsw_theme_colours(self) -> None:
+        self.assertEqual("#FFDC00", UNSW_COLOURS["yellow"])
+        self.assertEqual("#3F61C4", UNSW_COLOURS["indigo"])
 
     def test_combined_features_are_the_unique_union_of_selected_features(self) -> None:
         selected = spectrum.features_for_species(["H", "Na"])

@@ -19,6 +19,7 @@ PLOT_LEFT = 112.0
 PLOT_RIGHT = 1180.0
 SPECIES_ORDER = ("H", "He", "Na", "Ne", "Hg")
 SPECIES_NAMES = {"H": "Hydrogen", "He": "Helium", "Na": "Sodium", "Ne": "Neon", "Hg": "Mercury"}
+DEFAULT_SELECTED_SPECIES = ("H",)
 
 
 def wavelength_to_colour(wavelength_nm: float) -> str:
