@@ -216,16 +216,18 @@ def render_read_spectrum() -> None:
     """Render the bounded line-position to intensity-graph translation surface."""
     st.header("Read the spectrum")
     st.write("The same hydrogen spectrum can be shown in two different ways.")
-    selected_transition = st.session_state.get("read_spectrum_trace", read_spectrum.transition_options()[0])
+    feature_options = read_spectrum.feature_options()
+    if st.session_state.get("read_spectrum_trace") not in feature_options:
+        st.session_state["read_spectrum_trace"] = feature_options[0]
+    selected_feature_label = st.session_state["read_spectrum_trace"]
     st.markdown("**Line spectrum**")
-    st.markdown(read_spectrum.render_line_spectrum_svg(selected_transition), unsafe_allow_html=True)
+    st.markdown(read_spectrum.render_line_spectrum_svg(selected_feature_label), unsafe_allow_html=True)
     st.markdown("**Intensity vs wavelength**")
-    st.markdown(read_spectrum.render_intensity_graph_svg(selected_transition), unsafe_allow_html=True)
+    st.markdown(read_spectrum.render_intensity_graph_svg(selected_feature_label), unsafe_allow_html=True)
     st.caption("The line and peak are at the same wavelength. Peak height is simplified here so you can focus on position.")
-    selected_transition = st.selectbox(
+    st.selectbox(
         "Choose a line to trace",
-        read_spectrum.transition_options(),
-        format_func=lambda transition: f"{transition} · {float(read_spectrum.feature_for_transition(transition)['wavelength_nm']):.3f} nm",
+        feature_options,
         key="read_spectrum_trace",
     )
     compare_prompt("Find another line and its matching peak. What stays the same? What has been added?", key="chem1a_read_spectrum_prompt")

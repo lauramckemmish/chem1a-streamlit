@@ -132,9 +132,14 @@ class SpectroscopyDataTests(unittest.TestCase):
         features = read_spectrum.balmer_features()
         self.assertEqual(features, hydrogen.balmer_detail_features())
         self.assertEqual(6, len(features))
-        selected_transition = read_spectrum.transition_options()[0]
-        line_svg = read_spectrum.render_line_spectrum_svg(selected_transition)
-        graph_svg = read_spectrum.render_intensity_graph_svg(selected_transition)
+        self.assertEqual(["Line A", "Line B", "Line C", "Line D", "Line E", "Line F"], read_spectrum.feature_options())
+        labelled_features = read_spectrum.labelled_features()
+        self.assertEqual(
+            sorted(float(feature["wavelength_nm"]) for feature in features),
+            [float(labelled_features[label]["wavelength_nm"]) for label in read_spectrum.feature_options()],
+        )
+        line_svg = read_spectrum.render_line_spectrum_svg("Line A")
+        graph_svg = read_spectrum.render_intensity_graph_svg("Line A")
         for feature in features:
             x = spectrum.wavelength_x(float(feature["wavelength_nm"]))
             self.assertIn(f'x1="{x:.2f}"', line_svg)
@@ -142,11 +147,18 @@ class SpectroscopyDataTests(unittest.TestCase):
         self.assertIn("Wavelength / nm", line_svg)
         self.assertIn("Intensity", graph_svg)
         self.assertIn("Peak height is not measured intensity", graph_svg)
+        for rendered in (line_svg, graph_svg):
+            self.assertIn("Example line", rendered)
+            self.assertIn("Your trace", rendered)
+            self.assertNotIn("3→2", rendered)
+            self.assertNotIn("4→2", rendered)
+            self.assertNotIn("656.285", rendered)
+            self.assertNotIn("486.136", rendered)
 
     def test_read_spectrum_peak_height_is_equal_and_illustrative(self) -> None:
-        rendered = read_spectrum.render_intensity_graph_svg(read_spectrum.transition_options()[1])
+        rendered = read_spectrum.render_intensity_graph_svg("Line B")
         self.assertEqual(6, rendered.count('class="illustrative-peak"'))
-        self.assertEqual(64.0, read_spectrum.ILLUSTRATIVE_PEAK_HEIGHT)
+        self.assertEqual(88.0, read_spectrum.ILLUSTRATIVE_PEAK_HEIGHT)
         self.assertNotIn("relative_intensity", rendered)
 
     def test_hydrogen_transition_lookup_uses_existing_stored_features(self) -> None:

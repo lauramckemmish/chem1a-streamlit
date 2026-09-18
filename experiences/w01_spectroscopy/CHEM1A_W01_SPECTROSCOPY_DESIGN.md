@@ -120,7 +120,7 @@ Do not add a transition calculator or automatically reveal the calculated answer
 
 **DECISION:** Read the spectrum is a separate third learner surface. Its main cognitive job is quantitative line spectrum → intensity-vs-wavelength graph; the earlier barcode transition is not repeated here.
 
-Students inspect the established six-line hydrogen Balmer detail in both representations, vertically aligned on exactly the same wavelength coordinate system. One 3→2 line ↔ peak mapping is explicit; learners then trace another selected transition.
+Students inspect the established six-line hydrogen detail in both representations, vertically aligned on exactly the same wavelength coordinate system. One example line ↔ peak mapping is explicit; learners then trace another selected feature. **DECISION:** Read the spectrum preserves the quantitative wavelength axis but does not expose transition assignments or exact line wavelengths, because those values would prematurely reveal the Hydrogen prediction payoff. Neutral feature labels support the representation-translation task without becoming an answer key. The paired representations should visually dominate the surface through aligned, readable plots.
 
 ### Critical visual constraint
 

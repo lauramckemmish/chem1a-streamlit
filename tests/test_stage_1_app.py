@@ -225,6 +225,10 @@ class StageOneAppTests(unittest.TestCase):
 
     def test_read_spectrum_has_aligned_representations_and_native_trace_control(self) -> None:
         self.assertEqual(["Choose a line to trace"], [control.label for control in self.app.selectbox])
+        self.assertEqual(
+            ["Line A", "Line B", "Line C", "Line D", "Line E", "Line F"],
+            list(self.app.selectbox[0].options),
+        )
         rendered = [block.value for block in self.app.markdown]
         self.assertTrue(any("The same hydrogen spectrum can be shown in two different ways." in block for block in rendered))
         self.assertTrue(any("**Line spectrum**" in block for block in rendered))
@@ -244,9 +248,12 @@ class StageOneAppTests(unittest.TestCase):
                 for block in rendered
             )
         )
-        self.app.selectbox[0].set_value("5→2").run()
+        self.app.selectbox[0].set_value("Line D").run()
         updated = [block.value for block in self.app.markdown]
-        self.assertTrue(any("Trace 5→2" in block for block in updated))
+        read_rendered = [block for block in updated if "read-line-svg" in block or "intensity-graph-svg" in block]
+        self.assertEqual(2, len(read_rendered))
+        self.assertTrue(all("Your trace" in block for block in read_rendered))
+        self.assertTrue(all("3→2" not in block and "656.285" not in block for block in read_rendered))
 
     def test_sidebar_contains_only_chem1a_identity_and_verified_source_context(self) -> None:
         sidebar_text = " ".join(block.value for block in self.app.sidebar.markdown)
