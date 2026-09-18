@@ -170,9 +170,24 @@ class StageOneAppTests(unittest.TestCase):
     def test_read_spectrum_has_aligned_representations_and_native_trace_control(self) -> None:
         self.assertEqual(["Choose a line to trace"], [control.label for control in self.app.selectbox])
         rendered = [block.value for block in self.app.markdown]
+        self.assertTrue(any("The same hydrogen spectrum can be shown in two different ways." in block for block in rendered))
+        self.assertTrue(any("**Line spectrum**" in block for block in rendered))
+        self.assertTrue(any("**Intensity vs wavelength**" in block for block in rendered))
         self.assertTrue(any("Hydrogen line spectrum" in block for block in rendered))
         self.assertTrue(any("Hydrogen intensity versus wavelength" in block for block in rendered))
+        self.assertIn(
+            "The line and peak are at the same wavelength. Peak height is simplified here so you can focus on position.",
+            [caption.value for caption in self.app.caption],
+        )
+        self.assertTrue(any("Find another line and its matching peak. What stays the same? What has been added?" in block for block in rendered))
         self.assertIn("What about peak height?", [section.label for section in self.app.expander])
+        self.assertTrue(
+            any(
+                "Real spectra can have unequal peak heights. Intensity depends on the physical conditions and on how the spectrum is produced and measured. Here, peak height is held constant so you can focus on the wavelength mapping."
+                in block
+                for block in rendered
+            )
+        )
         self.app.selectbox[0].set_value("5→2").run()
         updated = [block.value for block in self.app.markdown]
         self.assertTrue(any("Trace 5→2" in block for block in updated))

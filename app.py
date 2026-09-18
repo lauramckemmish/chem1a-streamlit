@@ -164,13 +164,13 @@ def render_hydrogen() -> None:
 def render_read_spectrum() -> None:
     """Render the bounded line-position to intensity-graph translation surface."""
     st.header("Read the spectrum")
-    st.write("Here are two ways to represent the same hydrogen spectrum.")
+    st.write("The same hydrogen spectrum can be shown in two different ways.")
     selected_transition = st.session_state.get("read_spectrum_trace", read_spectrum.transition_options()[0])
     st.markdown("**Line spectrum**")
     st.markdown(read_spectrum.render_line_spectrum_svg(selected_transition), unsafe_allow_html=True)
     st.markdown("**Intensity vs wavelength**")
     st.markdown(read_spectrum.render_intensity_graph_svg(selected_transition), unsafe_allow_html=True)
-    st.caption("This line and peak are at the same wavelength. Peak heights are simplified here so you can focus on wavelength position.")
+    st.caption("The line and peak are at the same wavelength. Peak height is simplified here so you can focus on position.")
     selected_transition = st.selectbox(
         "Choose a line to trace",
         read_spectrum.transition_options(),
@@ -179,7 +179,7 @@ def render_read_spectrum() -> None:
     )
     compare_prompt("Find another line and its matching peak. What stays the same? What has been added?", key="chem1a_read_spectrum_prompt")
     with st.expander("What about peak height?", expanded=False):
-        st.write("Real spectra can have unequal peak heights. Intensity can depend on physical conditions and on how a spectrum is produced or measured. This graph holds peak height constant so you can focus on the wavelength mapping.")
+        st.write("Real spectra can have unequal peak heights. Intensity depends on the physical conditions and on how the spectrum is produced and measured. Here, peak height is held constant so you can focus on the wavelength mapping.")
 
 
 st.set_page_config(page_title="CHEM 1A — Spectroscopy", layout="wide")
