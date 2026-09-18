@@ -40,7 +40,7 @@ def apply_shared_visual_system() -> None:
             letter-spacing: 0.01em;
             margin: 0.05rem 0 0.25rem;
         }}
-        .st-key-chem1a_compare_prompt {{
+        .st-key-chem1a_compare_prompt, .st-key-chem1a_absorption_prompt {{
             background: #f7f5fb;
             border-left: 4px solid var(--chem1a-purple);
             margin-top: 0.9rem;
@@ -70,8 +70,8 @@ def apply_shared_visual_system() -> None:
     )
 
 
-def compare_prompt(text: str) -> None:
+def compare_prompt(text: str, *, key: str = "chem1a_compare_prompt") -> None:
     """Render the shared, quiet prompt treatment for an observational comparison."""
-    with st.container(key="chem1a_compare_prompt"):
+    with st.container(key=key):
         st.markdown('<p class="chem1a-prompt-label">Compare</p>', unsafe_allow_html=True)
         st.markdown(f'<p class="chem1a-prompt-text">{text}</p>', unsafe_allow_html=True)

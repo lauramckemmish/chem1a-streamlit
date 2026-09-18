@@ -22,7 +22,7 @@ class StageOneAppTests(unittest.TestCase):
         self.assertFalse(self.checkbox("Mercury").value)
         self.assertTrue(self.checkbox("Combined spectrum").value)
         self.assertFalse(self.checkbox("Separate spectra").value)
-        self.assertEqual(1, sum("<svg" in block.value for block in self.app.markdown))
+        self.assertEqual(["Explore absorption spectra"], [section.label for section in self.app.expander])
 
     def test_combined_view_adds_selected_species_without_changing_the_shared_scale(self) -> None:
         self.checkbox("Sodium").set_value(True).run()
@@ -36,13 +36,23 @@ class StageOneAppTests(unittest.TestCase):
         self.checkbox("Sodium").set_value(True).run()
         self.checkbox("Separate spectra").set_value(True).run()
         spectra = [block.value for block in self.app.markdown if "<svg" in block.value]
-        self.assertEqual(2, len(spectra))
+        self.assertGreaterEqual(len(spectra), 2)
         self.assertIn("Combined selected lines", spectra[0])
         self.assertIn("Sodium", spectra[1])
 
     def test_no_selected_atom_has_a_neutral_prompt(self) -> None:
         self.checkbox("Hydrogen").set_value(False).run()
         self.assertEqual(["Select an atom to begin."], [notice.value for notice in self.app.info])
+
+    def test_absorption_reveal_reuses_current_combined_selection(self) -> None:
+        self.checkbox("Sodium").set_value(True).run()
+        absorption_svg = next(
+            block.value for block in self.app.markdown if "Selected atomic absorption-line positions" in block.value
+        )
+        self.assertIn("588.995", absorption_svg)
+        self.assertIn("589.592", absorption_svg)
+        self.assertTrue(self.checkbox("Hydrogen").value)
+        self.assertTrue(self.checkbox("Sodium").value)
 
 
 if __name__ == "__main__":

@@ -69,6 +69,16 @@ def combined_features_for_species(species: Iterable[str]) -> list[dict[str, str]
     return [by_wavelength[wavelength] for wavelength in sorted(by_wavelength, key=float)]
 
 
+def absorption_features_for_species(species: Iterable[str]) -> dict[str, list[dict[str, str]]]:
+    """Return the same selected teaching features for the position-comparison absorption view."""
+    return features_for_species(species)
+
+
+def combined_absorption_features_for_species(species: Iterable[str]) -> list[dict[str, str]]:
+    """Return the same de-duplicated union for combined absorption and emission views."""
+    return combined_features_for_species(species)
+
+
 def _render_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[str, str]) -> str:
     """Render equal-geometry, shared-axis barcode rows."""
     row_height = 96
@@ -123,4 +133,71 @@ def render_combined_svg(species: Iterable[str]) -> str:
     return _render_rows_svg(
         {"combined": combined_features_for_species(species)},
         {"combined": "Combined selected lines"},
+    )
+
+
+def _render_absorption_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[str, str]) -> str:
+    """Render the shared-position absorption comparison: a visible band with equal dark lines."""
+    row_height = 116
+    height = 72 + row_height * len(rows)
+    gradient_stops = "".join(
+        f'<stop offset="{(wavelength - WAVELENGTH_MIN_NM) / (WAVELENGTH_MAX_NM - WAVELENGTH_MIN_NM) * 100:.2f}%" '
+        f'stop-color="{wavelength_to_colour(wavelength)}" />'
+        for wavelength in (WAVELENGTH_MIN_NM, 440.0, 490.0, 510.0, 580.0, 645.0, WAVELENGTH_MAX_NM)
+    )
+    svg_rows: list[str] = []
+    for index, (symbol, features) in enumerate(rows.items()):
+        top = 14 + index * row_height
+        band_top = top + 43
+        band_height = 34
+        baseline = top + 85
+        values = ", ".join(f"{float(feature['wavelength_nm']):.3f}" for feature in features)
+        ticks = "".join(
+            f'<line x1="{wavelength_x(tick):.2f}" y1="{baseline}" '
+            f'x2="{wavelength_x(tick):.2f}" y2="{baseline + 8}" class="tick" />'
+            f'<text x="{wavelength_x(tick):.2f}" y="{baseline + 27}" class="tick-label">{tick}</text>'
+            for tick in range(400, 781, 100)
+        )
+        lines = "".join(
+            f'<line x1="{wavelength_x(float(feature["wavelength_nm"])):.2f}" y1="{band_top}" '
+            f'x2="{wavelength_x(float(feature["wavelength_nm"])):.2f}" y2="{band_top + band_height}" '
+            f'class="absorption-line" />'
+            for feature in features
+        )
+        svg_rows.append(
+            f'<g aria-label="{escape(names[symbol])} absorption: dark lines at {values} nm">'
+            f'<text x="18" y="{top + 19}" class="species">{escape(names[symbol])}</text>'
+            f'<text x="18" y="{top + 36}" class="feature-count">{len(features)} selected features</text>'
+            f'<rect x="{PLOT_LEFT}" y="{band_top}" width="{PLOT_RIGHT - PLOT_LEFT}" height="{band_height}" '
+            f'fill="url(#visible-spectrum-band)" class="visible-band" />'
+            f'<line x1="{PLOT_LEFT}" y1="{baseline}" x2="{PLOT_RIGHT}" y2="{baseline}" class="axis" />'
+            f'{ticks}{lines}</g>'
+        )
+    return f'''<style>
+.absorption-svg {{ display: block; width: 100%; height: auto; background: #ffffff; font-family: "Source Sans Pro", Arial, sans-serif; color: #17212b; }}
+.axis, .tick {{ stroke: #64748b; stroke-width: 1.3; }}
+.tick-label {{ fill: #334155; font-size: 15px; text-anchor: middle; }}
+.species {{ fill: #17212b; font-size: 19px; font-weight: 650; }}
+.feature-count {{ fill: #475569; font-size: 13px; }}
+.visible-band {{ shape-rendering: crispEdges; }}
+.absorption-line {{ stroke: #111827; stroke-width: 2.2; vector-effect: non-scaling-stroke; }}
+</style>
+<svg class="absorption-svg" viewBox="0 0 1200 {height}" role="img" aria-label="Selected atomic absorption-line positions on the shared 380 to 780 nanometre scale">
+<title>Selected atomic absorption features on a shared wavelength scale</title>
+<desc>A continuous illustrative visible-spectrum band has equal dark lines at the selected wavelength positions. Line darkness and width do not encode relative strength.</desc>
+<defs><linearGradient id="visible-spectrum-band" x1="0%" y1="0%" x2="100%" y2="0%">{gradient_stops}</linearGradient></defs>
+{''.join(svg_rows)}
+</svg>'''
+
+
+def render_absorption_comparison_svg(species: Iterable[str]) -> str:
+    """Render separate selected-atom absorption rows on the shared Stage 1 axis."""
+    return _render_absorption_rows_svg(absorption_features_for_species(species), SPECIES_NAMES)
+
+
+def render_combined_absorption_svg(species: Iterable[str]) -> str:
+    """Render the selected combined absorption positions without strength encoding."""
+    return _render_absorption_rows_svg(
+        {"combined": combined_absorption_features_for_species(species)},
+        {"combined": "Combined"},
     )

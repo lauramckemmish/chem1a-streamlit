@@ -91,6 +91,20 @@ class SpectroscopyDataTests(unittest.TestCase):
         )
         self.assertTrue(all(380 <= float(feature["wavelength_nm"]) <= 780 for feature in combined))
 
+    def test_absorption_uses_the_same_selected_positions_as_emission(self) -> None:
+        species = ["H", "Na", "Ne"]
+        self.assertEqual(spectrum.features_for_species(species), spectrum.absorption_features_for_species(species))
+        self.assertEqual(
+            spectrum.combined_features_for_species(species),
+            spectrum.combined_absorption_features_for_species(species),
+        )
+        absorption = spectrum.render_combined_absorption_svg(species)
+        self.assertIn("continuous illustrative visible-spectrum band", absorption)
+        self.assertNotIn("relative_intensity", absorption)
+        self.assertTrue(
+            all(380 <= float(feature["wavelength_nm"]) <= 780 for feature in spectrum.combined_absorption_features_for_species(species))
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

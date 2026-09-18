@@ -66,6 +66,14 @@ observation comes before explanation.
 
 Do not initially explain the origin of line structure or place an energy-level/Rydberg explanation beside the comparison.
 
+### Reused Screen 1 — Explore spectra
+
+Screen 1 is one reusable phenomenon surface. On the first visit (Move A), learners inspect emission spectra only. On the second visit (Move C), after workshop work reconnecting wavelength, frequency and photon energy, they may open a subordinate absorption comparison.
+
+For this bounded first-year representation, absorption deliberately uses the same selected teaching-feature wavelengths as emission. It is a comparison of characteristic positions, not a model of relative line strength. The absorption display is a continuous illustrative visible-spectrum band with equal dark lines at those positions.
+
+Combined and separate spectrum controls remain optional exploration affordances, not required learner steps. Screen 1 stops before explanatory models, transitions, calculations, or line assignments.
+
 ## Stage 2 — Hydrogen
 
 Main cognitive job:
