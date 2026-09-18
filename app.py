@@ -1,7 +1,7 @@
 import streamlit as st
 
 from chem1a_ui import apply_shared_visual_system, compare_prompt, hard_reveal, stage_tabs
-from experiences.w01_spectroscopy import hydrogen, spectrum
+from experiences.w01_spectroscopy import hydrogen, read_spectrum, spectrum
 
 
 EXPLORE_DEFAULT_SELECTED_SPECIES = spectrum.SPECIES_ORDER
@@ -143,6 +143,27 @@ def render_hydrogen() -> None:
             st.markdown(hydrogen.render_series_detail_svg(series), unsafe_allow_html=True)
 
 
+def render_read_spectrum() -> None:
+    """Render the bounded line-position to intensity-graph translation surface."""
+    st.header("Read the spectrum")
+    st.write("Here are two ways to represent the same hydrogen spectrum.")
+    selected_transition = st.session_state.get("read_spectrum_trace", read_spectrum.transition_options()[0])
+    st.markdown("**Line spectrum**")
+    st.markdown(read_spectrum.render_line_spectrum_svg(selected_transition), unsafe_allow_html=True)
+    st.markdown("**Intensity vs wavelength**")
+    st.markdown(read_spectrum.render_intensity_graph_svg(selected_transition), unsafe_allow_html=True)
+    st.caption("This line and peak are at the same wavelength. Peak heights are simplified here so you can focus on wavelength position.")
+    selected_transition = st.selectbox(
+        "Choose a line to trace",
+        read_spectrum.transition_options(),
+        format_func=lambda transition: f"{transition} · {float(read_spectrum.feature_for_transition(transition)['wavelength_nm']):.3f} nm",
+        key="read_spectrum_trace",
+    )
+    compare_prompt("Find another line and its matching peak. What stays the same? What has been added?", key="chem1a_read_spectrum_prompt")
+    with st.expander("What about peak height?", expanded=False):
+        st.write("Real spectra can have unequal peak heights. Intensity can depend on physical conditions and on how a spectrum is produced or measured. This graph holds peak height constant so you can focus on the wavelength mapping.")
+
+
 st.set_page_config(page_title="CHEM 1A — Spectroscopy", layout="wide")
 apply_shared_visual_system()
 
@@ -157,11 +178,13 @@ with st.sidebar:
 
 st.title("CHEM 1A")
 st.subheader("Week 01 — Spectroscopy")
-explore_tab, hydrogen_tab = stage_tabs(
-    ["Explore spectra", "Hydrogen"],
+explore_tab, hydrogen_tab, read_spectrum_tab = stage_tabs(
+    ["Explore spectra", "Hydrogen", "Read the spectrum"],
     key="spectroscopy_stage_tabs",
 )
 with explore_tab:
     render_explore_spectra()
 with hydrogen_tab:
     render_hydrogen()
+with read_spectrum_tab:
+    render_read_spectrum()

@@ -109,16 +109,11 @@ Students calculate wavelengths elsewhere in the workshop and use the app to insp
 
 Do not add a transition calculator or automatically reveal the calculated answer.
 
-## Stage 3 — Barcode to graph
+## Stage 3 — Read the spectrum
 
-Main cognitive job:
-translate between representations.
+**DECISION:** Read the spectrum is a separate third learner surface. Its main cognitive job is quantitative line spectrum → intensity-vs-wavelength graph; the earlier barcode transition is not repeated here.
 
-Students should be able to inspect:
-
-1. coloured barcode / line spectrum;
-2. intensity-vs-wavelength graph;
-3. preferably both together.
+Students inspect the established six-line hydrogen Balmer detail in both representations, vertically aligned on exactly the same wavelength coordinate system. One 3→2 line ↔ peak mapping is explicit; learners then trace another selected transition.
 
 ### Critical visual constraint
 
@@ -145,7 +140,7 @@ The initial graph uses equal-height peaks as an explicitly simplified **position
 line at wavelength λ
 → peak at the same wavelength λ
 
-Equal-height peaks deliberately suppress intensity information and must be clearly described as simplified/illustrative with respect to peak height. Do not present this as a realistic intensity spectrum or invent plausible-looking intensity ratios.
+Equal-height peaks deliberately suppress intensity information and must be clearly described as illustrative rather than physical relative intensities. A brief optional “What about peak height?” reveal notes that real observed intensity can depend on physical conditions and how the spectrum is produced or measured. Do not present this as a realistic intensity spectrum or invent plausible-looking intensity ratios.
 
 ### Optional intensity extension
 

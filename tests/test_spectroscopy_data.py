@@ -4,6 +4,7 @@ from decimal import Decimal
 from chem1a_ui import UNSW_COLOURS
 from experiences.w01_spectroscopy import data
 from experiences.w01_spectroscopy import hydrogen
+from experiences.w01_spectroscopy import read_spectrum
 from experiences.w01_spectroscopy import spectrum
 
 
@@ -126,6 +127,27 @@ class SpectroscopyDataTests(unittest.TestCase):
         self.assertEqual(6, len(features))
         self.assertEqual(["3→2", "4→2", "5→2", "6→2", "7→2", "8→2"], [hydrogen.transition_label(feature) for feature in features])
         self.assertEqual(features, data.hydrogen_detail_features())
+
+    def test_read_spectrum_reuses_balmer_features_and_shared_coordinates(self) -> None:
+        features = read_spectrum.balmer_features()
+        self.assertEqual(features, hydrogen.balmer_detail_features())
+        self.assertEqual(6, len(features))
+        selected_transition = read_spectrum.transition_options()[0]
+        line_svg = read_spectrum.render_line_spectrum_svg(selected_transition)
+        graph_svg = read_spectrum.render_intensity_graph_svg(selected_transition)
+        for feature in features:
+            x = spectrum.wavelength_x(float(feature["wavelength_nm"]))
+            self.assertIn(f'x1="{x:.2f}"', line_svg)
+            self.assertIn(f'L {x:.2f} ', graph_svg)
+        self.assertIn("Wavelength / nm", line_svg)
+        self.assertIn("Intensity", graph_svg)
+        self.assertIn("Peak height is not measured intensity", graph_svg)
+
+    def test_read_spectrum_peak_height_is_equal_and_illustrative(self) -> None:
+        rendered = read_spectrum.render_intensity_graph_svg(read_spectrum.transition_options()[1])
+        self.assertEqual(6, rendered.count('class="illustrative-peak"'))
+        self.assertEqual(64.0, read_spectrum.ILLUSTRATIVE_PEAK_HEIGHT)
+        self.assertNotIn("relative_intensity", rendered)
 
     def test_prediction_marker_uses_the_entered_value_without_reference_substitution(self) -> None:
         prediction_nm = 650.123

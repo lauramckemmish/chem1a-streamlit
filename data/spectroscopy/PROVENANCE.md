@@ -37,6 +37,6 @@ No universal numerical grouping threshold is asserted. All grouping is explicit,
 
 ## Intensity and limitations
 
-No quantitative learner-consumed intensity values are supplied. NIST table intensity values are source-reported, source-dependent metadata only; they are neither normalised nor comparable as a universal line-strength scale. The later equal-height position-mapping graph is presentation-layer behaviour and is not encoded as scientific intensity here.
+No quantitative learner-consumed intensity values are supplied. NIST table intensity values are source-reported, source-dependent metadata only; they are neither normalised nor comparable as a universal line-strength scale. The Read the spectrum equal-height position-mapping graph is presentation-layer behaviour and is not encoded as scientific intensity here: its wavelength positions use the existing NIST-backed Balmer references, while its equal peak heights are illustrative teaching geometry only.
 
 This layer does not model source conditions, line broadening, detector response, resolution, molecular spectra, or a complete atomic-line inventory. Air/vacuum medium is recorded as metadata, but conversion between media and learner-facing convention controls are intentionally out of scope.

@@ -18,7 +18,7 @@ class StageOneAppTests(unittest.TestCase):
         return next(control for control in self.app.button if control.label == label)
 
     def test_tabs_replace_surface_configuration_and_default_to_all_five_atoms(self) -> None:
-        self.assertEqual(["Explore spectra", "Hydrogen"], [tab.label for tab in self.app.tabs])
+        self.assertEqual(["Explore spectra", "Hydrogen", "Read the spectrum"], [tab.label for tab in self.app.tabs])
         self.assertEqual(0, len(self.app.radio))
         self.assertTrue(all(self.checkbox(name).value for name in ("Hydrogen", "Helium", "Sodium", "Neon", "Mercury")))
 
@@ -111,7 +111,17 @@ class StageOneAppTests(unittest.TestCase):
         self.button("Plot my prediction").click().run()
         rendered = next(block.value for block in self.app.markdown if "Your prediction: 650.123 nm" in block.value)
         self.assertIn("Your prediction: 650.123 nm", rendered)
-        self.assertEqual(["See more of hydrogen"], [section.label for section in self.app.expander])
+        self.assertIn("See more of hydrogen", [section.label for section in self.app.expander])
+
+    def test_read_spectrum_has_aligned_representations_and_native_trace_control(self) -> None:
+        self.assertEqual(["Choose a line to trace"], [control.label for control in self.app.selectbox])
+        rendered = [block.value for block in self.app.markdown]
+        self.assertTrue(any("Hydrogen line spectrum" in block for block in rendered))
+        self.assertTrue(any("Hydrogen intensity versus wavelength" in block for block in rendered))
+        self.assertIn("What about peak height?", [section.label for section in self.app.expander])
+        self.app.selectbox[0].set_value("5→2").run()
+        updated = [block.value for block in self.app.markdown]
+        self.assertTrue(any("Trace 5→2" in block for block in updated))
 
     def test_sidebar_contains_only_chem1a_identity_and_verified_source_context(self) -> None:
         sidebar_text = " ".join(block.value for block in self.app.sidebar.markdown)
