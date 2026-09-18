@@ -61,9 +61,15 @@ def features_for_species(species: Iterable[str]) -> dict[str, list[dict[str, str
     }
 
 
-def render_comparison_svg(species: Iterable[str]) -> str:
-    """Render equal-geometry, shared-axis barcode rows for selected species."""
-    rows = features_for_species(species)
+def combined_features_for_species(species: Iterable[str]) -> list[dict[str, str]]:
+    """Return unique selected feature positions for the non-quantitative combined row."""
+    features = [feature for rows in features_for_species(species).values() for feature in rows]
+    by_wavelength = {feature["wavelength_nm"]: feature for feature in features}
+    return [by_wavelength[wavelength] for wavelength in sorted(by_wavelength, key=float)]
+
+
+def _render_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[str, str]) -> str:
+    """Render equal-geometry, shared-axis barcode rows."""
     row_height = 96
     height = 62 + row_height * len(rows)
     svg_rows: list[str] = []
@@ -84,8 +90,8 @@ def render_comparison_svg(species: Iterable[str]) -> str:
             for feature in features
         )
         svg_rows.append(
-            f'<g aria-label="{escape(SPECIES_NAMES[symbol])}: {values} nm">'
-            f'<text x="18" y="{top + 37}" class="species">{escape(SPECIES_NAMES[symbol])}</text>'
+            f'<g aria-label="{escape(names[symbol])}: {values} nm">'
+            f'<text x="18" y="{top + 37}" class="species">{escape(names[symbol])}</text>'
             f'<text x="18" y="{top + 57}" class="feature-count">{len(features)} selected features</text>'
             f'<line x1="{PLOT_LEFT}" y1="{baseline}" x2="{PLOT_RIGHT}" y2="{baseline}" class="axis" />'
             f'{ticks}{lines}</g>'
@@ -103,3 +109,17 @@ def render_comparison_svg(species: Iterable[str]) -> str:
 <desc>Each row uses the same labelled wavelength axis. Line marks have uniform height and width, so they show position only.</desc>
 {''.join(svg_rows)}
 </svg>'''
+
+
+def render_comparison_svg(species: Iterable[str]) -> str:
+    """Render separate selected-atom barcode rows on the shared Stage 1 axis."""
+    rows = features_for_species(species)
+    return _render_rows_svg(rows, SPECIES_NAMES)
+
+
+def render_combined_svg(species: Iterable[str]) -> str:
+    """Render the union of selected feature positions without intensity encoding."""
+    return _render_rows_svg(
+        {"combined": combined_features_for_species(species)},
+        {"combined": "Combined selected lines"},
+    )

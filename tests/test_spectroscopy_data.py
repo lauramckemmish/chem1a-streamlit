@@ -71,6 +71,17 @@ class SpectroscopyDataTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             spectrum.features_for_species(["He+"])
 
+    def test_combined_features_are_the_unique_union_of_selected_features(self) -> None:
+        selected = spectrum.features_for_species(["H", "Na"])
+        combined = spectrum.combined_features_for_species(["H", "Na"])
+        self.assertEqual(6, len(combined))
+        self.assertEqual(len(combined), len({feature["wavelength_nm"] for feature in combined}))
+        self.assertEqual(
+            {feature["feature_id"] for feature in combined},
+            {feature["feature_id"] for features in selected.values() for feature in features},
+        )
+        self.assertTrue(all(380 <= float(feature["wavelength_nm"]) <= 780 for feature in combined))
+
 
 if __name__ == "__main__":
     unittest.main()
