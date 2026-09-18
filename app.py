@@ -1,6 +1,6 @@
 import streamlit as st
 
-from chem1a_ui import apply_shared_visual_system, compare_prompt
+from chem1a_ui import apply_shared_visual_system, compare_prompt, hard_reveal, stage_tabs
 from experiences.w01_spectroscopy import hydrogen, spectrum
 
 
@@ -34,53 +34,24 @@ def render_explore_spectra() -> None:
             )
         ]
 
-        st.markdown('<p class="chem1a-control-label">Views</p>', unsafe_allow_html=True)
-        combined_view, separate_view = st.columns(2)
-        show_combined = combined_view.checkbox(
-            "Combined spectrum",
-            value=explore_control_value("explore_combined", True),
-            key="explore_combined",
-            on_change=remember_explore_control,
-            args=("explore_combined",),
-        )
-        show_separate = separate_view.checkbox(
-            "Separate spectra",
-            value=explore_control_value("explore_separate", False),
-            key="explore_separate",
-            on_change=remember_explore_control,
-            args=("explore_separate",),
-        )
-
     if selected_species:
-        if show_combined:
-            st.subheader("Combined selected lines")
-            st.markdown(spectrum.render_combined_svg(selected_species), unsafe_allow_html=True)
-        if show_separate:
-            st.subheader("Separate spectra")
-            st.markdown(spectrum.render_comparison_svg(selected_species), unsafe_allow_html=True)
-        if not show_combined and not show_separate:
-            st.info("Choose a view to inspect the selected line positions.")
+        st.markdown(spectrum.render_comparison_svg(selected_species), unsafe_allow_html=True)
         st.caption("Colour is an illustrative wavelength cue. The labelled horizontal position is the evidence to compare.")
         if "Na" in selected_species:
             st.caption("Sodium includes two selected lines at 588.995 nm and 589.592 nm; on this shared scale they sit very close together.")
         compare_prompt("What changes? What stays the same?")
 
-        with st.expander("Explore absorption spectra", expanded=False):
+        if hard_reveal(
+            "Return to these same atoms and compare their absorption features.",
+            key="absorption",
+            reveal_label="Reveal absorption spectra",
+        ):
             st.caption("This simplified view compares line positions. Relative line strength is not represented.")
-            if show_combined:
-                st.markdown("**Combined selected lines — emission**")
-                st.markdown(spectrum.render_combined_svg(selected_species), unsafe_allow_html=True)
-                st.markdown("**Combined selected lines — absorption**")
-                st.markdown(spectrum.render_combined_absorption_svg(selected_species), unsafe_allow_html=True)
-            if show_separate:
-                st.markdown("**Separate selected atoms**")
-                for symbol in selected_species:
-                    st.markdown(f"**{spectrum.SPECIES_NAMES[symbol]} — emission**")
-                    st.markdown(spectrum.render_comparison_svg([symbol]), unsafe_allow_html=True)
-                    st.markdown(f"**{spectrum.SPECIES_NAMES[symbol]} — absorption**")
-                    st.markdown(spectrum.render_absorption_comparison_svg([symbol]), unsafe_allow_html=True)
-            if not show_combined and not show_separate:
-                st.info("Choose a view to inspect matched emission and absorption line positions.")
+            for symbol in selected_species:
+                st.markdown(f"**{spectrum.SPECIES_NAMES[symbol]} — emission**")
+                st.markdown(spectrum.render_comparison_svg([symbol]), unsafe_allow_html=True)
+                st.markdown(f"**{spectrum.SPECIES_NAMES[symbol]} — absorption**")
+                st.markdown(spectrum.render_absorption_comparison_svg([symbol]), unsafe_allow_html=True)
             compare_prompt(
                 "What do you notice about where the absorption and emission lines appear?",
                 key="chem1a_absorption_prompt",
@@ -147,16 +118,22 @@ def render_hydrogen() -> None:
 st.set_page_config(page_title="CHEM 1A — Spectroscopy", layout="wide")
 apply_shared_visual_system()
 
+with st.sidebar:
+    with st.container(key="chem1a_sidebar_brand"):
+        st.markdown("### CHEM 1A")
+        st.caption("Week 01 · Spectroscopy")
+    with st.container(key="chem1a_sidebar_source"):
+        st.markdown("**Scientific source**")
+        st.caption("Bounded NIST atomic-spectroscopy references")
+        st.caption("Selected teaching features; provenance is recorded in this repository.")
+
 st.title("CHEM 1A")
 st.subheader("Week 01 — Spectroscopy")
-surface = st.radio(
-    "Choose a spectroscopy surface",
-    ("Explore spectra", "Hydrogen"),
-    horizontal=True,
-    key="spectroscopy_surface",
+explore_tab, hydrogen_tab = stage_tabs(
+    ["Explore spectra", "Hydrogen"],
+    key="spectroscopy_stage_tabs",
 )
-
-if surface == "Explore spectra":
+with explore_tab:
     render_explore_spectra()
-else:
+with hydrogen_tab:
     render_hydrogen()

@@ -57,7 +57,7 @@ H, He, Na, Ne, Hg.
 
 For v1, use neutral species only: H I, He I, Na I, Ne I and Hg I.
 
-Students compare several atomic line/barcode spectra on a common 380–780 nm wavelength scale. This is a teaching/display window for visible comparison, not a claim that visible-light boundaries are physically exact.
+Students compare separately stacked atomic line/barcode spectra on a common 380–780 nm wavelength scale. This is a teaching/display window for visible comparison, not a claim that visible-light boundaries are physically exact.
 
 Hydrogen should show a reduced set of approximately four prominent visible Balmer features: enough structure to recognise a pattern, but not so much detail that H dominates the comparison. The interface should describe these as selected prominent lines/features and must not imply that they are exhaustive.
 
@@ -68,11 +68,13 @@ Do not initially explain the origin of line structure or place an energy-level/R
 
 ### Reused Screen 1 — Explore spectra
 
-Screen 1 is one reusable phenomenon surface. On the first visit (Move A), learners inspect emission spectra only. On the second visit (Move C), after workshop work reconnecting wavelength, frequency and photon energy, they may open a subordinate absorption comparison.
+Screen 1 is one reusable phenomenon surface. On the first visit (Move A), learners inspect emission spectra only. Hydrogen alone is the default starting spectrum; each selected comparison atom adds one vertically aligned individual spectrum. On the second visit (Move C), after workshop work reconnecting wavelength, frequency and photon energy, learners intentionally reveal the absorption comparison.
 
 For this bounded first-year representation, absorption deliberately uses the same selected teaching-feature wavelengths as emission. It is a comparison of characteristic positions, not a model of relative line strength. The absorption display is a continuous illustrative visible-spectrum band with equal dark lines at those positions.
 
-Combined and separate spectrum controls remain optional exploration affordances, not required learner steps. Screen 1 stops before explanatory models, transitions, calculations, or line assignments.
+Separate aligned atomic spectra are the current core representation. Combined spectra are removed from the learner-facing design and parked only as a possible future composition/mixture feature if a real learning need emerges. The hard reveal persists for the session; after it is activated, each selected atom's emission and absorption representations are paired together. Screen 1 stops before explanatory models, transitions, calculations, or line assignments.
+
+Once multiple real learner surfaces exist, tab navigation is the app-stage grammar. The sidebar provides shared CHEM 1A shell and verified resource/source context; it is not stage navigation.
 
 ## Stage 2 — Hydrogen
 

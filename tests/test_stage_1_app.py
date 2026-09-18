@@ -14,64 +14,74 @@ class StageOneAppTests(unittest.TestCase):
     def checkbox(self, label: str):
         return next(control for control in self.app.checkbox if control.label == label)
 
-    def test_default_is_hydrogen_combined_view(self) -> None:
-        self.assertEqual(("Explore spectra", "Hydrogen"), tuple(self.app.radio[0].options))
-        self.assertEqual("Explore spectra", self.app.radio[0].value)
+    def button(self, label: str):
+        return next(control for control in self.app.button if control.label == label)
+
+    def test_tabs_replace_surface_configuration_and_default_to_hydrogen_only(self) -> None:
+        self.assertEqual(["Explore spectra", "Hydrogen"], [tab.label for tab in self.app.tabs])
+        self.assertEqual(0, len(self.app.radio))
         self.assertTrue(self.checkbox("Hydrogen").value)
         self.assertFalse(self.checkbox("Helium").value)
         self.assertFalse(self.checkbox("Sodium").value)
         self.assertFalse(self.checkbox("Neon").value)
         self.assertFalse(self.checkbox("Mercury").value)
-        self.assertTrue(self.checkbox("Combined spectrum").value)
-        self.assertFalse(self.checkbox("Separate spectra").value)
-        self.assertEqual(["Explore absorption spectra"], [section.label for section in self.app.expander])
 
-    def test_combined_view_adds_selected_species_without_changing_the_shared_scale(self) -> None:
-        self.checkbox("Sodium").set_value(True).run()
-        self.checkbox("Neon").set_value(True).run()
-        combined_svg = next(block.value for block in self.app.markdown if "Combined selected lines" in block.value)
-        self.assertIn("380 to 780 nanometre scale", combined_svg)
-        self.assertIn("588.995", combined_svg)
-        self.assertIn("585.249", combined_svg)
+    def test_explore_has_no_combined_spectrum_controls_or_display(self) -> None:
+        labels = [control.label for control in self.app.checkbox]
+        self.assertNotIn("Combined spectrum", labels)
+        self.assertNotIn("Separate spectra", labels)
+        self.assertFalse(any("Combined selected lines" in block.value for block in self.app.markdown))
 
-    def test_separate_view_adds_component_rows_below_the_combined_row(self) -> None:
+    def test_selected_atoms_render_as_separate_aligned_rows_from_scientific_data(self) -> None:
+        self.checkbox("Helium").set_value(True).run()
+        rendered = next(block.value for block in self.app.markdown if "Selected atomic emission-line positions" in block.value)
+        self.assertIn("Hydrogen", rendered)
+        self.assertIn("Helium", rendered)
+        self.assertIn("380 to 780 nanometre scale", rendered)
+        self.assertIn("656.285", rendered)
+        self.assertIn("587.561", rendered)
+
+    def test_absorption_is_hidden_until_the_hard_reveal_then_persists(self) -> None:
+        self.assertFalse(any("Selected atomic absorption-line positions" in block.value for block in self.app.markdown))
+        self.button("Reveal absorption spectra").click().run()
+        rendered = [block.value for block in self.app.markdown if "Selected atomic absorption-line positions" in block.value]
+        self.assertEqual(1, len(rendered))
+        self.assertIn("Hydrogen absorption", rendered[0])
+        self.app.run()
+        self.assertTrue(any("Selected atomic absorption-line positions" in block.value for block in self.app.markdown))
+
+    def test_absorption_pairs_each_selected_atom_with_its_own_emission(self) -> None:
         self.checkbox("Sodium").set_value(True).run()
-        self.checkbox("Separate spectra").set_value(True).run()
-        spectra = [block.value for block in self.app.markdown if "<svg" in block.value]
-        self.assertGreaterEqual(len(spectra), 2)
-        self.assertIn("Combined selected lines", spectra[0])
-        self.assertIn("Sodium", spectra[1])
+        self.button("Reveal absorption spectra").click().run()
+        rendered = [block.value for block in self.app.markdown]
+        self.assertTrue(any("Hydrogen — emission" in block for block in rendered))
+        self.assertTrue(any("Hydrogen — absorption" in block for block in rendered))
+        self.assertTrue(any("Sodium — emission" in block for block in rendered))
+        self.assertTrue(any("Sodium — absorption" in block for block in rendered))
+        absorption = [block for block in rendered if "Sodium absorption" in block]
+        self.assertEqual(1, len(absorption))
+        self.assertIn("588.995", absorption[0])
+        self.assertIn("589.592", absorption[0])
 
     def test_no_selected_atom_has_a_neutral_prompt(self) -> None:
         self.checkbox("Hydrogen").set_value(False).run()
         self.assertEqual(["Select an atom to begin."], [notice.value for notice in self.app.info])
 
-    def test_absorption_reveal_reuses_current_combined_selection(self) -> None:
-        self.checkbox("Sodium").set_value(True).run()
-        absorption_svg = next(
-            block.value for block in self.app.markdown if "Selected atomic absorption-line positions" in block.value
-        )
-        self.assertIn("588.995", absorption_svg)
-        self.assertIn("589.592", absorption_svg)
-        self.assertTrue(self.checkbox("Hydrogen").value)
-        self.assertTrue(self.checkbox("Sodium").value)
-
-    def test_hydrogen_surface_places_the_learner_prediction_without_calculating_it(self) -> None:
-        self.app.radio[0].set_value("Hydrogen").run()
+    def test_hydrogen_surface_stays_available_without_calculating_the_prediction(self) -> None:
         self.assertEqual(["Your predicted wavelength (nm)"], [control.label for control in self.app.number_input])
         self.app.number_input[0].set_value(650.123).run()
-        self.app.button[0].click().run()
+        self.button("Plot my prediction").click().run()
         rendered = next(block.value for block in self.app.markdown if "Your prediction: 650.123 nm" in block.value)
         self.assertIn("Your prediction: 650.123 nm", rendered)
         self.assertEqual(["See more of hydrogen"], [section.label for section in self.app.expander])
 
-    def test_switching_surfaces_preserves_explore_state_and_adds_no_ion_surface(self) -> None:
-        self.checkbox("Sodium").set_value(True).run()
-        self.app.radio[0].set_value("Hydrogen").run()
-        self.app.radio[0].set_value("Explore spectra").run()
-        self.assertTrue(self.checkbox("Hydrogen").value)
-        self.assertTrue(self.checkbox("Sodium").value)
-        self.assertEqual(("Explore spectra", "Hydrogen"), tuple(self.app.radio[0].options))
+    def test_sidebar_contains_only_chem1a_identity_and_verified_source_context(self) -> None:
+        sidebar_text = " ".join(block.value for block in self.app.sidebar.markdown)
+        self.assertIn("CHEM 1A", sidebar_text)
+        self.assertIn("Scientific source", sidebar_text)
+        self.assertNotIn("CURIOUS", sidebar_text)
+        self.assertNotIn("NESA", sidebar_text)
+        self.assertNotIn("Data to Discovery", sidebar_text)
 
 
 if __name__ == "__main__":
