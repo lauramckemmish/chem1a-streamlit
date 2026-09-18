@@ -72,14 +72,16 @@ class StageOneAppTests(unittest.TestCase):
         self.button("Show wavelength scale").click().run()
         self.button("Reveal absorption spectra").click().run()
         rendered = [block.value for block in self.app.markdown]
-        self.assertTrue(any("Hydrogen — emission" in block for block in rendered))
-        self.assertTrue(any("Hydrogen — absorption" in block for block in rendered))
-        self.assertTrue(any("Sodium — emission" in block for block in rendered))
-        self.assertTrue(any("Sodium — absorption" in block for block in rendered))
+        self.assertTrue(any('class="chem1a-pair-atom">Hydrogen' in block for block in rendered))
+        self.assertTrue(any('class="chem1a-pair-atom">Sodium' in block for block in rendered))
+        self.assertGreaterEqual(sum('chem1a-pair-label">Emission' in block for block in rendered), 5)
+        self.assertGreaterEqual(sum('chem1a-pair-label">Absorption' in block for block in rendered), 5)
         sodium_absorption = [block for block in rendered if "Sodium absorption" in block]
         self.assertEqual(1, len(sodium_absorption))
         self.assertIn("588.995", sodium_absorption[0])
         self.assertIn("589.592", sodium_absorption[0])
+        self.assertFalse(any("What do you notice about where the absorption and emission lines appear?" in block for block in rendered))
+        self.assertTrue(any("Emission and absorption lines occur at the same wavelengths. Why?" in block for block in rendered))
 
     def test_added_atoms_use_the_current_quantitative_absorption_state(self) -> None:
         self.checkbox("Sodium").set_value(False).run()
@@ -108,13 +110,27 @@ class StageOneAppTests(unittest.TestCase):
             self.checkbox(label).set_value(False).run()
         self.assertEqual(["Choose an atom to keep a spectrum in view."], [notice.value for notice in self.app.info])
 
-    def test_hydrogen_surface_stays_available_without_calculating_the_prediction(self) -> None:
+    def test_hydrogen_evidence_is_hidden_until_a_valid_prediction_then_persists(self) -> None:
         self.assertEqual(["Your predicted wavelength (nm)"], [control.label for control in self.app.number_input])
+        initial = [block.value for block in self.app.markdown]
+        self.assertFalse(any("Observed hydrogen Balmer features" in block for block in initial))
+        self.assertNotIn("Show transition labels", [control.label for control in self.app.checkbox])
         self.app.number_input[0].set_value(650.123).run()
         self.button("Plot my prediction").click().run()
         rendered = next(block.value for block in self.app.markdown if "Your prediction: 650.123 nm" in block.value)
         self.assertIn("Your prediction: 650.123 nm", rendered)
+        self.assertIn("Show transition labels", [control.label for control in self.app.checkbox])
+        self.assertTrue(any("Does your prediction match an observed line?" in block.value for block in self.app.markdown))
         self.assertIn("See more of hydrogen", [section.label for section in self.app.expander])
+        self.app.run()
+        self.assertTrue(any("Observed hydrogen Balmer features" in block.value for block in self.app.markdown))
+
+    def test_positive_out_of_range_prediction_reveals_evidence_without_substitution(self) -> None:
+        self.app.number_input[0].set_value(820.0).run()
+        self.button("Plot my prediction").click().run()
+        self.assertTrue(any("Observed hydrogen Balmer features" in block.value for block in self.app.markdown))
+        self.assertFalse(any("Your prediction: 820.000 nm" in block.value for block in self.app.markdown))
+        self.assertIn("This prediction is outside the displayed 380–780 nm spectrum.", [notice.value for notice in self.app.info])
 
     def test_read_spectrum_has_aligned_representations_and_native_trace_control(self) -> None:
         self.assertEqual(["Choose a line to trace"], [control.label for control in self.app.selectbox])

@@ -27,6 +27,11 @@ def explore_reveal_state() -> tuple[bool, bool]:
     return wavelength_revealed, absorption_revealed
 
 
+def hydrogen_evidence_revealed() -> bool:
+    """Return the persistent prediction-first evidence state for Hydrogen."""
+    return bool(st.session_state.setdefault("hydrogen_evidence_revealed", False))
+
+
 def render_explore_spectra() -> None:
     """Render the established first spectroscopy phenomenon surface."""
     st.header("Explore atomic spectra")
@@ -78,20 +83,28 @@ def render_explore_spectra() -> None:
         ):
             st.caption("This simplified view compares line positions. Relative line strength is not represented.")
             for symbol in selected_species:
-                st.markdown(f"**{spectrum.SPECIES_NAMES[symbol]} — emission**")
-                st.markdown(spectrum.render_comparison_svg([symbol]), unsafe_allow_html=True)
-                st.markdown(f"**{spectrum.SPECIES_NAMES[symbol]} — absorption**")
-                st.markdown(spectrum.render_absorption_comparison_svg([symbol]), unsafe_allow_html=True)
+                with st.container(key=f"chem1a_absorption_pair_{symbol}"):
+                    st.markdown(
+                        f'<p class="chem1a-pair-atom">{spectrum.SPECIES_NAMES[symbol]}</p>',
+                        unsafe_allow_html=True,
+                    )
+                    st.markdown('<p class="chem1a-pair-label">Emission</p>', unsafe_allow_html=True)
+                    st.markdown(spectrum.render_comparison_svg([symbol], show_identity=False), unsafe_allow_html=True)
+                    st.markdown('<p class="chem1a-pair-label">Absorption</p>', unsafe_allow_html=True)
+                    st.markdown(
+                        spectrum.render_absorption_comparison_svg([symbol], show_identity=False),
+                        unsafe_allow_html=True,
+                    )
             compare_prompt(
-                "What do you notice about where the absorption and emission lines appear?",
-                key="chem1a_absorption_prompt",
+                "Emission and absorption lines occur at the same wavelengths. Why?",
+                key="chem1a_absorption_question",
             )
 
 
 def render_hydrogen() -> None:
     """Render the spectral-evidence surface learners revisit after paper-based reasoning."""
     st.header("Hydrogen")
-    st.write("Look more closely at hydrogen. This view includes six selected Balmer lines.")
+    st.write("Use your calculated wavelength to test the model against the hydrogen spectrum.")
 
     prediction_column, action_column = st.columns((3, 1))
     predicted_wavelength = prediction_column.number_input(
@@ -106,41 +119,48 @@ def render_hydrogen() -> None:
         st.session_state.pop("hydrogen_prediction_nm", None)
         if predicted_wavelength is None:
             st.info("Enter a wavelength in nm to place your prediction on the spectrum.")
-        elif not hydrogen.prediction_is_in_display_range(float(predicted_wavelength)):
-            st.info("This prediction is outside the displayed 380–780 nm spectrum.")
+        elif float(predicted_wavelength) <= 0:
+            st.info("Enter a positive wavelength in nm to place your prediction on the spectrum.")
         else:
-            st.session_state["hydrogen_prediction_nm"] = float(predicted_wavelength)
+            st.session_state["hydrogen_evidence_revealed"] = True
+            st.session_state["hydrogen_submitted_prediction_nm"] = float(predicted_wavelength)
+            if hydrogen.prediction_is_in_display_range(float(predicted_wavelength)):
+                st.session_state["hydrogen_prediction_nm"] = float(predicted_wavelength)
 
-    show_transition_labels = st.checkbox("Show transition labels", value=False, key="show_hydrogen_transition_labels")
-    st.markdown(
-        hydrogen.render_balmer_detail_svg(
-            prediction_nm=st.session_state.get("hydrogen_prediction_nm"),
-            show_transition_labels=show_transition_labels,
-        ),
-        unsafe_allow_html=True,
-    )
-    st.caption("Observed lines have uniform geometry here: position is the evidence, not relative line strength.")
-    compare_prompt("Does your prediction match an observed line?", key="chem1a_hydrogen_prediction_prompt")
+    if hydrogen_evidence_revealed():
+        submitted_prediction = st.session_state.get("hydrogen_submitted_prediction_nm")
+        if submitted_prediction is not None and not hydrogen.prediction_is_in_display_range(float(submitted_prediction)):
+            st.info("This prediction is outside the displayed 380–780 nm spectrum.")
+        show_transition_labels = st.checkbox("Show transition labels", value=False, key="show_hydrogen_transition_labels")
+        st.markdown(
+            hydrogen.render_balmer_detail_svg(
+                prediction_nm=st.session_state.get("hydrogen_prediction_nm"),
+                show_transition_labels=show_transition_labels,
+            ),
+            unsafe_allow_html=True,
+        )
+        st.caption("Observed lines have uniform geometry here: position is the evidence, not relative line strength.")
+        compare_prompt("Does your prediction match an observed line?", key="chem1a_hydrogen_prediction_prompt")
 
-    with st.expander("See more of hydrogen", expanded=False):
-        st.write("Visible Balmer lines are only part of the hydrogen spectrum.")
-        st.markdown("**Where the selected series occur**")
-        st.markdown(hydrogen.render_series_overview_svg(), unsafe_allow_html=True)
-        st.caption("The overview locates the series. Use the local views below to inspect selected reference lines.")
+        with st.expander("See more of hydrogen", expanded=False):
+            st.write("Visible Balmer lines are only part of the hydrogen spectrum.")
+            st.markdown("**Where the selected series occur**")
+            st.markdown(hydrogen.render_series_overview_svg(), unsafe_allow_html=True)
+            st.caption("The overview locates the series. Use the local views below to inspect selected reference lines.")
 
-        series_columns = st.columns(3)
-        selected_series = [
-            series
-            for column, series, default in zip(
-                series_columns,
-                ("Lyman", "Balmer", "Paschen"),
-                (False, True, False),
-            )
-            if column.checkbox(f"{series} · {hydrogen.SERIES_REGIONS[series]}", value=default, key=f"series_{series}")
-        ]
-        for series in selected_series:
-            st.markdown(f"**{series} · {hydrogen.SERIES_REGIONS[series]}**")
-            st.markdown(hydrogen.render_series_detail_svg(series), unsafe_allow_html=True)
+            series_columns = st.columns(3)
+            selected_series = [
+                series
+                for column, series, default in zip(
+                    series_columns,
+                    ("Lyman", "Balmer", "Paschen"),
+                    (False, True, False),
+                )
+                if column.checkbox(f"{series} · {hydrogen.SERIES_REGIONS[series]}", value=default, key=f"series_{series}")
+            ]
+            for series in selected_series:
+                st.markdown(f"**{series} · {hydrogen.SERIES_REGIONS[series]}**")
+                st.markdown(hydrogen.render_series_detail_svg(series), unsafe_allow_html=True)
 
 
 def render_read_spectrum() -> None:

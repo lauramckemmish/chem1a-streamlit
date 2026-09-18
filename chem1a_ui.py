@@ -42,7 +42,7 @@ def apply_shared_visual_system() -> None:
             letter-spacing: 0.01em;
             margin: 0.05rem 0 0.25rem;
         }}
-        .st-key-chem1a_compare_prompt, .st-key-chem1a_absorption_prompt {{
+        .st-key-chem1a_compare_prompt, .st-key-chem1a_absorption_prompt, .st-key-chem1a_absorption_question {{
             background: #f7f5fb;
             border-left: 4px solid var(--chem1a-purple);
             margin-top: 0.9rem;
@@ -78,6 +78,20 @@ def apply_shared_visual_system() -> None:
             color: #17212b;
             font-size: 1.05rem;
             margin: 0;
+        }}
+        [class*="st-key-chem1a_absorption_pair_"] {{
+            margin: 0.35rem 0 0.65rem;
+        }}
+        .chem1a-pair-atom {{
+            color: #17212b;
+            font-weight: 650;
+            margin: 0.2rem 0 0.1rem;
+        }}
+        .chem1a-pair-label {{
+            color: #475569;
+            font-size: 0.85rem;
+            font-weight: 650;
+            margin: 0.1rem 0 0;
         }}
         [role="tab"] {{
             color: #17212b !important;

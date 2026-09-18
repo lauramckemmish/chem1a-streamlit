@@ -76,6 +76,10 @@ After workshop work reconnecting wavelength, frequency and photon energy (Move B
 
 Only after that wavelength reveal can learners intentionally reveal the absorption comparison. Each selected atom's quantitative emission and absorption representations are paired together. The absorption reveal cannot precede the wavelength representation, and both reveals persist for the session.
 
+**OBSERVATION:** The first per-atom absorption rendering was scientifically correct but vertically repetitive.
+
+**DECISION:** Emission and absorption remain paired by atom as compact comparison blocks, with atom identity outside the two plots and no repeated feature-count chrome. The previous observation prompt is replaced by the forward question, “Emission and absorption lines occur at the same wavelengths. Why?” This creates the need for the subsequent energy-level model without asking learners to explain it prematurely.
+
 For this bounded first-year representation, absorption deliberately uses the same selected teaching-feature wavelengths as emission. It is a comparison of characteristic positions, not a model of relative line strength. The absorption display is a continuous illustrative visible-spectrum band with equal dark lines at those positions.
 
 Separate aligned atomic spectra are the current core representation. Combined spectra are removed from the learner-facing design and parked only as a possible future composition/mixture feature if a real learning need emerges. The hard reveal persists for the session; after it is activated, each selected atom's emission and absorption representations are paired together. Screen 1 stops before explanatory models, transitions, calculations, or line assignments.
@@ -89,7 +93,7 @@ check a prediction against observed evidence.
 
 ### App boundary
 
-Whiteboard and paper remain the thinking surfaces for reasoning about energy levels, reading gaps, and calculating a hydrogen wavelength. The app does not reproduce that work with an energy-level diagram or calculator. Its Hydrogen surface provides the spectral evidence and model consequence: a learner enters their own predicted wavelength, places it against the observed six-line Balmer spectrum, and judges the match.
+Whiteboard and paper remain the thinking surfaces for reasoning about energy levels, reading gaps, and calculating a hydrogen wavelength. The app does not reproduce that work with an energy-level diagram or calculator. **DECISION:** Hydrogen uses a prediction-first hard evidence reveal: a valid submitted prediction reveals the observed six-line Balmer spectrum and places the learner-entered in-range value unchanged against it. Evidence persists for the session, transition labels appear only after the reveal, and the deliberately quantitative line spectrum is retained because barcode → quantitative translation already occurred earlier.
 
 Transition labels are an optional reference reveal, not a gate or reward. A collapsed bottom extension locates selected NIST Lyman, Balmer, and Paschen references across UV, visible, and IR, with readable local series views. This establishes that visible Balmer features are only part of hydrogen's spectrum without becoming a series calculator.
 

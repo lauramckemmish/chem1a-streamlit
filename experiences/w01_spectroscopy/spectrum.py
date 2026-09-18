@@ -79,14 +79,16 @@ def combined_absorption_features_for_species(species: Iterable[str]) -> list[dic
     return combined_features_for_species(species)
 
 
-def _render_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[str, str]) -> str:
+def _render_rows_svg(
+    rows: dict[str, list[dict[str, str]]], names: dict[str, str], *, show_identity: bool = True
+) -> str:
     """Render equal-geometry quantitative rows on the shared wavelength axis."""
-    row_height = 96
-    height = 62 + row_height * len(rows)
+    row_height = 96 if show_identity else 78
+    height = (62 if show_identity else 26) + row_height * len(rows)
     svg_rows: list[str] = []
     for index, (symbol, features) in enumerate(rows.items()):
-        top = 18 + index * row_height
-        baseline = top + 59
+        top = (18 if show_identity else 6) + index * row_height
+        baseline = top + (59 if show_identity else 42)
         values = ", ".join(f"{float(feature['wavelength_nm']):.3f}" for feature in features)
         ticks = "".join(
             f'<line x1="{wavelength_x(tick):.2f}" y1="{baseline}" '
@@ -100,10 +102,14 @@ def _render_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[str, str
             f'stroke="{wavelength_to_colour(float(feature["wavelength_nm"]))}" class="spectral-line" />'
             for feature in features
         )
-        svg_rows.append(
-            f'<g aria-label="{escape(names[symbol])}: {values} nm">'
+        identity = (
             f'<text x="18" y="{top + 37}" class="species">{escape(names[symbol])}</text>'
             f'<text x="18" y="{top + 57}" class="feature-count">{len(features)} selected features</text>'
+            if show_identity
+            else ""
+        )
+        svg_rows.append(
+            f'<g aria-label="{escape(names[symbol])}: {values} nm">{identity}'
             f'<line x1="{PLOT_LEFT}" y1="{baseline}" x2="{PLOT_RIGHT}" y2="{baseline}" class="axis" />'
             f'{ticks}{lines}</g>'
         )
@@ -122,10 +128,10 @@ def _render_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[str, str
 </svg>'''
 
 
-def render_comparison_svg(species: Iterable[str]) -> str:
+def render_comparison_svg(species: Iterable[str], *, show_identity: bool = True) -> str:
     """Render separate selected-atom quantitative rows on the shared Stage 1 axis."""
     rows = features_for_species(species)
-    return _render_rows_svg(rows, SPECIES_NAMES)
+    return _render_rows_svg(rows, SPECIES_NAMES, show_identity=show_identity)
 
 
 def _render_visual_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[str, str]) -> str:
@@ -182,10 +188,12 @@ def render_combined_svg(species: Iterable[str]) -> str:
     )
 
 
-def _render_absorption_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[str, str]) -> str:
+def _render_absorption_rows_svg(
+    rows: dict[str, list[dict[str, str]]], names: dict[str, str], *, show_identity: bool = True
+) -> str:
     """Render the shared-position absorption comparison: a visible band with equal dark lines."""
-    row_height = 116
-    height = 72 + row_height * len(rows)
+    row_height = 116 if show_identity else 84
+    height = (72 if show_identity else 30) + row_height * len(rows)
     gradient_stops = "".join(
         f'<stop offset="{(wavelength - WAVELENGTH_MIN_NM) / (WAVELENGTH_MAX_NM - WAVELENGTH_MIN_NM) * 100:.2f}%" '
         f'stop-color="{wavelength_to_colour(wavelength)}" />'
@@ -193,10 +201,10 @@ def _render_absorption_rows_svg(rows: dict[str, list[dict[str, str]]], names: di
     )
     svg_rows: list[str] = []
     for index, (symbol, features) in enumerate(rows.items()):
-        top = 14 + index * row_height
-        band_top = top + 43
+        top = (14 if show_identity else 5) + index * row_height
+        band_top = top + (43 if show_identity else 8)
         band_height = 34
-        baseline = top + 85
+        baseline = top + (85 if show_identity else 52)
         values = ", ".join(f"{float(feature['wavelength_nm']):.3f}" for feature in features)
         ticks = "".join(
             f'<line x1="{wavelength_x(tick):.2f}" y1="{baseline}" '
@@ -210,10 +218,14 @@ def _render_absorption_rows_svg(rows: dict[str, list[dict[str, str]]], names: di
             f'class="absorption-line" />'
             for feature in features
         )
-        svg_rows.append(
-            f'<g aria-label="{escape(names[symbol])} absorption: dark lines at {values} nm">'
+        identity = (
             f'<text x="18" y="{top + 19}" class="species">{escape(names[symbol])}</text>'
             f'<text x="18" y="{top + 36}" class="feature-count">{len(features)} selected features</text>'
+            if show_identity
+            else ""
+        )
+        svg_rows.append(
+            f'<g aria-label="{escape(names[symbol])} absorption: dark lines at {values} nm">{identity}'
             f'<rect x="{PLOT_LEFT}" y="{band_top}" width="{PLOT_RIGHT - PLOT_LEFT}" height="{band_height}" '
             f'fill="url(#visible-spectrum-band)" class="visible-band" />'
             f'<line x1="{PLOT_LEFT}" y1="{baseline}" x2="{PLOT_RIGHT}" y2="{baseline}" class="axis" />'
@@ -236,9 +248,11 @@ def _render_absorption_rows_svg(rows: dict[str, list[dict[str, str]]], names: di
 </svg>'''
 
 
-def render_absorption_comparison_svg(species: Iterable[str]) -> str:
+def render_absorption_comparison_svg(species: Iterable[str], *, show_identity: bool = True) -> str:
     """Render separate selected-atom absorption rows on the shared Stage 1 axis."""
-    return _render_absorption_rows_svg(absorption_features_for_species(species), SPECIES_NAMES)
+    return _render_absorption_rows_svg(
+        absorption_features_for_species(species), SPECIES_NAMES, show_identity=show_identity
+    )
 
 
 def render_combined_absorption_svg(species: Iterable[str]) -> str:
