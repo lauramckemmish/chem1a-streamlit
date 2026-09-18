@@ -53,7 +53,7 @@ def render_explore_spectra() -> None:
         st.info("Choose an atom to keep a spectrum in view.")
 
     with st.container(key="chem1a_stage_controls"):
-        st.markdown('<p class="chem1a-control-label">Focus the comparison</p>', unsafe_allow_html=True)
+        st.markdown('<p class="chem1a-control-label">Spectra in view</p>', unsafe_allow_html=True)
         atom_columns = (*st.columns(3), *st.columns(3))
         for column, symbol in zip(atom_columns, spectrum.SPECIES_ORDER):
             column.checkbox(

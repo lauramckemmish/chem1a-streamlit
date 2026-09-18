@@ -108,6 +108,18 @@ def apply_shared_visual_system() -> None:
             outline-offset: 2px;
             box-shadow: 0 0 0 5px var(--chem1a-yellow) !important;
         }}
+        label:has(input[type="checkbox"])[data-selected="true"] > div:first-of-type {{
+            background: var(--chem1a-purple) !important;
+            border-color: var(--chem1a-purple) !important;
+        }}
+        label:has(input[type="checkbox"])[data-selected="true"] > div:first-of-type svg {{
+            stroke: #ffffff !important;
+        }}
+        label:has(input[type="checkbox"]:focus-visible) > div:first-of-type {{
+            outline: 3px solid var(--chem1a-black);
+            outline-offset: 2px;
+            box-shadow: 0 0 0 5px var(--chem1a-yellow);
+        }}
         input[type="checkbox"]:focus-visible {{
             box-shadow: 0 0 0 4px var(--chem1a-yellow);
             outline: 3px solid var(--chem1a-black);

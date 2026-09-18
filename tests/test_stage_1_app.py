@@ -27,6 +27,9 @@ class StageOneAppTests(unittest.TestCase):
         self.assertNotIn("Combined spectrum", labels)
         self.assertNotIn("Separate spectra", labels)
         self.assertFalse(any("Combined selected lines" in block.value for block in self.app.markdown))
+        rendered = [block.value for block in self.app.markdown]
+        self.assertTrue(any("Spectra in view" in block for block in rendered))
+        self.assertFalse(any("Focus the comparison" in block for block in rendered))
 
     def test_default_explore_is_a_visual_barcode_without_wavelength_axis(self) -> None:
         rendered = next(block.value for block in self.app.markdown if "Selected atomic visual emission spectra" in block.value)
