@@ -1,6 +1,6 @@
 import streamlit as st
 
-from chem1a_ui import apply_shared_visual_system, compare_prompt, hard_reveal, stage_tabs
+from chem1a_ui import apply_shared_visual_system, compare_prompt, experience_context, hard_reveal, stage_tabs
 from experiences.w01_spectroscopy import hydrogen, read_spectrum, spectrum
 
 
@@ -194,8 +194,7 @@ with st.sidebar:
         st.caption("Bounded NIST atomic-spectroscopy references")
         st.caption("Selected teaching features; provenance is recorded in this repository.")
 
-st.title("CHEM 1A")
-st.subheader("Week 01 — Spectroscopy")
+experience_context("CHEM 1A · Week 01 · Spectroscopy")
 explore_tab, hydrogen_tab, read_spectrum_tab = stage_tabs(
     ["Explore spectra", "Hydrogen", "Read the spectrum"],
     key="spectroscopy_stage_tabs",

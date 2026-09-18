@@ -86,6 +86,8 @@ Separate aligned atomic spectra are the current core representation. Combined sp
 
 The wider representational progression is visual/barcode spectrum → quantitative wavelength line spectrum → later intensity-vs-wavelength graph. The graph belongs to the future Read the spectrum surface and is not specified in detail here. Once multiple real learner surfaces exist, tab navigation is the app-stage grammar. The sidebar provides shared CHEM 1A shell and verified resource/source context; it is not stage navigation.
 
+**DECISION:** The shared CHEM 1A shell uses compact course/week/experience context so the active learner surface and scientific evidence dominate the main-page hierarchy. Course identity remains available in both the compact main context and sidebar because the sidebar may be collapsed.
+
 ## Stage 2 — Hydrogen
 
 Main cognitive job:

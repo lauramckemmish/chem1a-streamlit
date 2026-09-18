@@ -21,6 +21,15 @@ class StageOneAppTests(unittest.TestCase):
         self.assertEqual(["Explore spectra", "Hydrogen", "Read the spectrum"], [tab.label for tab in self.app.tabs])
         self.assertEqual(0, len(self.app.radio))
         self.assertTrue(all(self.checkbox(name).value for name in ("Hydrogen", "Helium", "Sodium", "Neon", "Mercury")))
+        self.assertEqual([], [heading.value for heading in self.app.title])
+        self.assertEqual([], [heading.value for heading in self.app.subheader])
+        self.assertTrue(
+            any("CHEM 1A · Week 01 · Spectroscopy" in block.value for block in self.app.markdown)
+        )
+        self.assertEqual(
+            ["Explore atomic spectra", "Hydrogen", "Read the spectrum"],
+            [heading.value for heading in self.app.header],
+        )
 
     def test_explore_has_no_combined_spectrum_controls_or_display(self) -> None:
         labels = [control.label for control in self.app.checkbox]
@@ -194,8 +203,12 @@ class StageOneAppTests(unittest.TestCase):
 
     def test_sidebar_contains_only_chem1a_identity_and_verified_source_context(self) -> None:
         sidebar_text = " ".join(block.value for block in self.app.sidebar.markdown)
+        sidebar_captions = [caption.value for caption in self.app.sidebar.caption]
         self.assertIn("CHEM 1A", sidebar_text)
+        self.assertIn("Week 01 · Spectroscopy", sidebar_captions)
         self.assertIn("Scientific source", sidebar_text)
+        self.assertIn("Bounded NIST atomic-spectroscopy references", sidebar_captions)
+        self.assertIn("Selected teaching features; provenance is recorded in this repository.", sidebar_captions)
         self.assertNotIn("CURIOUS", sidebar_text)
         self.assertNotIn("NESA", sidebar_text)
         self.assertNotIn("Data to Discovery", sidebar_text)
