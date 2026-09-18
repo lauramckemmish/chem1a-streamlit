@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from chem1a_ui import UNSW_COLOURS
 from experiences.w01_spectroscopy import data
+from experiences.w01_spectroscopy import hydrogen
 from experiences.w01_spectroscopy import spectrum
 
 
@@ -104,6 +105,35 @@ class SpectroscopyDataTests(unittest.TestCase):
         self.assertTrue(
             all(380 <= float(feature["wavelength_nm"]) <= 780 for feature in spectrum.combined_absorption_features_for_species(species))
         )
+
+    def test_hydrogen_detail_is_the_established_six_balmer_features(self) -> None:
+        features = hydrogen.balmer_detail_features()
+        self.assertEqual(6, len(features))
+        self.assertEqual(["3→2", "4→2", "5→2", "6→2", "7→2", "8→2"], [hydrogen.transition_label(feature) for feature in features])
+        self.assertEqual(features, data.hydrogen_detail_features())
+
+    def test_prediction_marker_uses_the_entered_value_without_reference_substitution(self) -> None:
+        prediction_nm = 650.123
+        rendered = hydrogen.render_balmer_detail_svg(prediction_nm=prediction_nm)
+        self.assertIn("Your prediction: 650.123 nm", rendered)
+        self.assertIn(f'x1="{spectrum.wavelength_x(prediction_nm):.2f}"', rendered)
+        self.assertTrue(hydrogen.prediction_is_in_display_range(prediction_nm))
+        self.assertFalse(hydrogen.prediction_is_in_display_range(820.0))
+        self.assertFalse(hydrogen.prediction_is_in_display_range(-1.0))
+
+    def test_transition_label_reveal_uses_authoritative_metadata(self) -> None:
+        rendered = hydrogen.render_balmer_detail_svg(show_transition_labels=True)
+        for feature in hydrogen.balmer_detail_features():
+            self.assertIn(hydrogen.transition_label(feature), rendered)
+
+    def test_series_reference_views_are_loaded_from_existing_data(self) -> None:
+        self.assertEqual((90.0, 1900.0), hydrogen.series_overview_bounds())
+        for series, region in hydrogen.SERIES_REGIONS.items():
+            features = hydrogen.series_features(series)
+            self.assertTrue(features)
+            self.assertTrue(all(feature["series"] == series for feature in features))
+            self.assertTrue(all(float(feature["wavelength_nm"]) > 0 for feature in features))
+            self.assertIn(region, {"UV", "visible", "IR"})
 
 
 if __name__ == "__main__":

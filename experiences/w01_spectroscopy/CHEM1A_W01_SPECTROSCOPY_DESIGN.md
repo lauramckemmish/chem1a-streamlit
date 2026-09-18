@@ -79,6 +79,14 @@ Combined and separate spectrum controls remain optional exploration affordances,
 Main cognitive job:
 check a prediction against observed evidence.
 
+### App boundary
+
+Whiteboard and paper remain the thinking surfaces for reasoning about energy levels, reading gaps, and calculating a hydrogen wavelength. The app does not reproduce that work with an energy-level diagram or calculator. Its Hydrogen surface provides the spectral evidence and model consequence: a learner enters their own predicted wavelength, places it against the observed six-line Balmer spectrum, and judges the match.
+
+Transition labels are an optional reference reveal, not a gate or reward. A collapsed bottom extension locates selected NIST Lyman, Balmer, and Paschen references across UV, visible, and IR, with readable local series views. This establishes that visible Balmer features are only part of hydrogen's spectrum without becoming a series calculator.
+
+Hydrogen-like-ion comparison remains an optional later extension whose representation is not yet settled. Read the spectrum remains a separate future cognitive surface.
+
 Students return to the same hydrogen spectral representation encountered earlier.
 
 When students return to hydrogen, increase the visible detail deliberately. Target approximately six Balmer features in the useful visible/near-visible sequence around Hα ~656.3 nm, Hβ ~486.1 nm, Hγ ~434.0 nm, Hδ ~410.2 nm, ~397.0 nm and ~388.9 nm. This progressive spectral resolution is not inconsistent data: the earlier view uses selected prominent features for comparison; the later view lets students look more closely at hydrogen and see more structure. Exact reference values and source metadata belong in the later data/provenance layer.

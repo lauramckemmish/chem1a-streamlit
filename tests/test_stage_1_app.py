@@ -15,6 +15,8 @@ class StageOneAppTests(unittest.TestCase):
         return next(control for control in self.app.checkbox if control.label == label)
 
     def test_default_is_hydrogen_combined_view(self) -> None:
+        self.assertEqual(("Explore spectra", "Hydrogen"), tuple(self.app.radio[0].options))
+        self.assertEqual("Explore spectra", self.app.radio[0].value)
         self.assertTrue(self.checkbox("Hydrogen").value)
         self.assertFalse(self.checkbox("Helium").value)
         self.assertFalse(self.checkbox("Sodium").value)
@@ -53,6 +55,23 @@ class StageOneAppTests(unittest.TestCase):
         self.assertIn("589.592", absorption_svg)
         self.assertTrue(self.checkbox("Hydrogen").value)
         self.assertTrue(self.checkbox("Sodium").value)
+
+    def test_hydrogen_surface_places_the_learner_prediction_without_calculating_it(self) -> None:
+        self.app.radio[0].set_value("Hydrogen").run()
+        self.assertEqual(["Your predicted wavelength (nm)"], [control.label for control in self.app.number_input])
+        self.app.number_input[0].set_value(650.123).run()
+        self.app.button[0].click().run()
+        rendered = next(block.value for block in self.app.markdown if "Your prediction: 650.123 nm" in block.value)
+        self.assertIn("Your prediction: 650.123 nm", rendered)
+        self.assertEqual(["See more of hydrogen"], [section.label for section in self.app.expander])
+
+    def test_switching_surfaces_preserves_explore_state_and_adds_no_ion_surface(self) -> None:
+        self.checkbox("Sodium").set_value(True).run()
+        self.app.radio[0].set_value("Hydrogen").run()
+        self.app.radio[0].set_value("Explore spectra").run()
+        self.assertTrue(self.checkbox("Hydrogen").value)
+        self.assertTrue(self.checkbox("Sodium").value)
+        self.assertEqual(("Explore spectra", "Hydrogen"), tuple(self.app.radio[0].options))
 
 
 if __name__ == "__main__":
