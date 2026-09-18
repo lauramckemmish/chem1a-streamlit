@@ -1,7 +1,9 @@
 """Small shared visual conventions for CHEM 1A learner experiences.
 
 The palette and prompt treatment are adapted from the canonical UNSW educational
-app starter. Experience-specific pedagogy and scientific rendering remain local.
+app starter. UNSW yellow is reserved for compact rules, borders, and state markers;
+routine controls avoid large solid-yellow surfaces. Experience-specific pedagogy and
+scientific rendering remain local.
 """
 
 from __future__ import annotations
@@ -76,6 +78,35 @@ def apply_shared_visual_system() -> None:
             color: #17212b;
             font-size: 1.05rem;
             margin: 0;
+        }}
+        [role="tab"] {{
+            color: #17212b !important;
+        }}
+        [role="tab"] p {{
+            color: inherit !important;
+        }}
+        [role="tab"][aria-selected="true"] {{
+            color: #17212b !important;
+            font-weight: 650;
+        }}
+        [role="tab"][aria-selected="true"] p {{
+            font-weight: 650 !important;
+        }}
+        [class*="st-key-chem1a_hard_reveal_"] button {{
+            background: transparent !important;
+            border: 2px solid var(--chem1a-yellow) !important;
+            color: #17212b !important;
+            font-weight: 650;
+        }}
+        [class*="st-key-chem1a_hard_reveal_"] button:hover {{
+            background: rgba(255, 220, 0, 0.10) !important;
+            border-color: var(--chem1a-yellow) !important;
+            color: #17212b !important;
+        }}
+        button:focus-visible {{
+            outline: 3px solid var(--chem1a-black) !important;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 5px var(--chem1a-yellow) !important;
         }}
         input[type="checkbox"]:focus-visible {{
             box-shadow: 0 0 0 4px var(--chem1a-yellow);
