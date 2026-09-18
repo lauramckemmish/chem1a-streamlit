@@ -108,12 +108,12 @@ def render_hydrogen() -> None:
         st.markdown(hydrogen.render_balmer_barcode_svg(), unsafe_allow_html=True)
     st.caption("Nearest nm is accurate enough for this comparison.")
 
-    transition_columns = st.columns((1, 0.25, 1, 2))
+    transition_columns = st.columns((0.85, 0.12, 0.85, 3.2))
     from_n = transition_columns[0].number_input(
         "From level n",
         min_value=1,
         max_value=20,
-        value=3,
+        value=5,
         step=1,
         key="hydrogen_from_n_input",
     )
@@ -126,12 +126,12 @@ def render_hydrogen() -> None:
         step=1,
         key="hydrogen_to_n_input",
     )
-    prediction_column, action_column = st.columns((3, 1))
+    prediction_column, action_column = st.columns((1.5, 2.5))
     predicted_wavelength = prediction_column.number_input(
         "Your predicted wavelength (nm)",
         value=None,
         step=1.0,
-        placeholder="e.g. 656",
+        placeholder="e.g. 123",
         key="hydrogen_prediction_input",
     )
     plot_prediction = action_column.button("Plot my prediction", key="plot_hydrogen_prediction")

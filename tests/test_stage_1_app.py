@@ -148,8 +148,9 @@ class StageOneAppTests(unittest.TestCase):
                 for label in ("From level n", "To level n", "Your predicted wavelength (nm)")
             )
         )
-        self.assertEqual(3, self.hydrogen_input("From level n").value)
+        self.assertEqual(5, self.hydrogen_input("From level n").value)
         self.assertEqual(2, self.hydrogen_input("To level n").value)
+        self.assertEqual("e.g. 123", self.hydrogen_input("Your predicted wavelength (nm)").proto.placeholder)
         initial = [block.value for block in self.app.markdown]
         self.assertTrue(any("You have a predicted wavelength. Now test the model against the hydrogen spectrum." in block for block in initial))
         self.assertTrue(any("hydrogen-barcode-svg" in block for block in initial))
@@ -158,11 +159,11 @@ class StageOneAppTests(unittest.TestCase):
         self.assertNotIn("Show transition labels", [control.label for control in self.app.checkbox])
 
     def test_hydrogen_valid_prediction_reveals_local_evidence_and_persists(self) -> None:
-        self.hydrogen_input("Your predicted wavelength (nm)").set_value(656.0).run()
+        self.hydrogen_input("Your predicted wavelength (nm)").set_value(434.0).run()
         self.button("Plot my prediction").click().run()
         rendered = next(block.value for block in self.app.markdown if "hydrogen-local-svg" in block.value)
-        self.assertIn("Your prediction · 656 nm", rendered)
-        self.assertIn("Observed 3→2 · 656 nm", rendered)
+        self.assertIn("Your prediction · 434 nm", rendered)
+        self.assertIn("Observed 5→2 · 434 nm", rendered)
         self.assertIn("Show transition labels", [control.label for control in self.app.checkbox])
         self.assertTrue(any("This is the test: does your prediction match an observed line?" in block.value for block in self.app.markdown))
         self.assertIn(
