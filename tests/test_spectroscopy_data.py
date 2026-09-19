@@ -155,6 +155,15 @@ class SpectroscopyDataTests(unittest.TestCase):
             self.assertNotIn("656.285", rendered)
             self.assertNotIn("486.136", rendered)
 
+    def test_read_spectrum_offsets_coincident_example_and_trace_labels(self) -> None:
+        for rendered in (
+            read_spectrum.render_line_spectrum_svg(read_spectrum.EXAMPLE_FEATURE_LABEL),
+            read_spectrum.render_intensity_graph_svg(read_spectrum.EXAMPLE_FEATURE_LABEL),
+        ):
+            self.assertIn('text-anchor="end" class="guide-label">Example line', rendered)
+            self.assertIn('text-anchor="start" class="guide-label">Your trace', rendered)
+            self.assertIn(f'viewBox="0 0 1200 {read_spectrum.SVG_HEIGHT}"', rendered)
+
     def test_read_spectrum_peak_height_is_equal_and_illustrative(self) -> None:
         rendered = read_spectrum.render_intensity_graph_svg("Line B")
         self.assertEqual(6, rendered.count('class="illustrative-peak"'))
