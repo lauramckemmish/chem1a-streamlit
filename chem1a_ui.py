@@ -53,26 +53,6 @@ def apply_shared_visual_system() -> None:
             margin: 0.9rem 0 0.8rem;
             padding: 0.2rem 0 0.2rem 0.8rem;
         }}
-        .st-key-chem1a_sidebar_brand {{
-            background: var(--chem1a-yellow);
-            color: var(--chem1a-black);
-            margin: 0 0 0.45rem;
-            padding: 0.4rem 0.55rem;
-        }}
-        .st-key-chem1a_sidebar_source {{
-            background: #111827;
-            color: #ffffff;
-            margin: 0 0 0.45rem;
-            padding: 0.45rem 0.55rem;
-        }}
-        .st-key-chem1a_sidebar_source p {{ color: #ffffff !important; }}
-        .chem1a-experience-context {{
-            color: #475569;
-            font-size: 0.88rem;
-            font-weight: 650;
-            letter-spacing: 0.02em;
-            margin: 0.1rem 0 0.2rem;
-        }}
         .chem1a-prompt-label {{
             color: #4f3b74;
             font-size: 0.76rem;
@@ -159,16 +139,17 @@ def compare_prompt(text: str, *, key: str = "chem1a_compare_prompt") -> None:
         st.markdown(f'<p class="chem1a-prompt-text">{text}</p>', unsafe_allow_html=True)
 
 
-def experience_context(text: str) -> None:
-    """Render compact course and experience context above the stage tabs."""
-    st.markdown(f'<p class="chem1a-experience-context">{text}</p>', unsafe_allow_html=True)
-
-
-def stage_tabs(labels: list[str], *, key: str, default_index: int = 0):
-    """Render the small shared tab-state contract for real CHEM 1A surfaces."""
+def stage_selector(labels: list[str], *, key: str, default_index: int = 0) -> str:
+    """Render a compact local selector within an experience."""
     if st.session_state.get(key) not in labels:
         st.session_state[key] = labels[default_index]
-    return st.tabs(labels, default=st.session_state[key], key=key, on_change="rerun")
+    return st.segmented_control(
+        "Spectroscopy stage",
+        labels,
+        default=st.session_state[key],
+        key=key,
+        label_visibility="collapsed",
+    )
 
 
 def hard_reveal(prompt: str, *, key: str, reveal_label: str) -> bool:

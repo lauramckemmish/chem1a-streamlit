@@ -10,6 +10,10 @@ APP_PATH = Path(__file__).resolve().parents[1] / "app.py"
 class StageOneAppTests(unittest.TestCase):
     def setUp(self) -> None:
         self.app = AppTest.from_file(str(APP_PATH)).run()
+        if "hydrogen" in self._testMethodName:
+            self.app.segmented_control[0].set_value("Hydrogen").run()
+        elif "read_spectrum" in self._testMethodName:
+            self.app.segmented_control[0].set_value("Read the spectrum").run()
 
     def checkbox(self, label: str):
         return next(control for control in self.app.checkbox if control.label == label)
@@ -19,18 +23,20 @@ class StageOneAppTests(unittest.TestCase):
 
     def test_tabs_replace_surface_configuration_and_default_to_all_five_atoms(self) -> None:
         self.assertEqual(
-            ["Spectroscopy", "Explore spectra", "Hydrogen", "Read the spectrum", "Atomic trends"],
+            ["Spectroscopy", "Periodic trends"],
             [tab.label for tab in self.app.tabs],
+        )
+        self.assertEqual(
+            ["Explore spectra", "Hydrogen", "Read the spectrum"],
+            list(self.app.segmented_control[0].options),
         )
         self.assertEqual(0, len(self.app.radio))
         self.assertTrue(all(self.checkbox(name).value for name in ("Hydrogen", "Helium", "Sodium", "Neon", "Mercury")))
         self.assertEqual([], [heading.value for heading in self.app.title])
         self.assertEqual([], [heading.value for heading in self.app.subheader])
-        self.assertTrue(
-            any("CHEM 1A · Week 01 · Spectroscopy" in block.value for block in self.app.markdown)
-        )
+        self.assertFalse(any("CHEM 1A · Week 01 · Spectroscopy" in block.value for block in self.app.markdown))
         self.assertEqual(
-            ["Explore atomic spectra", "Hydrogen", "Read the spectrum", "Explore periodic trends"],
+            ["Explore atomic spectra", "Explore periodic trends"],
             [heading.value for heading in self.app.header],
         )
 
@@ -258,17 +264,9 @@ class StageOneAppTests(unittest.TestCase):
         self.assertTrue(all("Your trace" in block for block in read_rendered))
         self.assertTrue(all("3→2" not in block and "656.285" not in block for block in read_rendered))
 
-    def test_sidebar_contains_only_chem1a_identity_and_verified_source_context(self) -> None:
-        sidebar_text = " ".join(block.value for block in self.app.sidebar.markdown)
-        sidebar_captions = [caption.value for caption in self.app.sidebar.caption]
-        self.assertIn("CHEM 1A", sidebar_text)
-        self.assertIn("Week 01 · Spectroscopy", sidebar_captions)
-        self.assertIn("Scientific source", sidebar_text)
-        self.assertIn("Bounded NIST atomic-spectroscopy references", sidebar_captions)
-        self.assertIn("Selected teaching features; provenance is recorded in this repository.", sidebar_captions)
-        self.assertNotIn("CURIOUS", sidebar_text)
-        self.assertNotIn("NESA", sidebar_text)
-        self.assertNotIn("Data to Discovery", sidebar_text)
+    def test_no_learner_sidebar_is_rendered(self) -> None:
+        self.assertEqual([], list(self.app.sidebar.markdown))
+        self.assertEqual([], list(self.app.sidebar.caption))
 
 
 if __name__ == "__main__":

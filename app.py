@@ -1,6 +1,6 @@
 import streamlit as st
 
-from chem1a_ui import apply_shared_visual_system, compare_prompt, experience_context, hard_reveal, stage_tabs
+from chem1a_ui import apply_shared_visual_system, compare_prompt, hard_reveal, stage_selector
 from experiences.atomic_trends import view as atomic_trends
 from experiences.w01_spectroscopy import hydrogen, read_spectrum, spectrum
 
@@ -239,27 +239,17 @@ def render_read_spectrum() -> None:
 st.set_page_config(page_title="CHEM 1A", layout="wide")
 apply_shared_visual_system()
 
-with st.sidebar:
-    with st.container(key="chem1a_sidebar_brand"):
-        st.markdown("### CHEM 1A")
-        st.caption("Week 01 · Spectroscopy")
-    with st.container(key="chem1a_sidebar_source"):
-        st.markdown("**Scientific source**")
-        st.caption("Bounded NIST atomic-spectroscopy references")
-        st.caption("Selected teaching features; provenance is recorded in this repository.")
-
-spectroscopy_tab, atomic_trends_tab = st.tabs(["Spectroscopy", "Atomic trends"])
+spectroscopy_tab, periodic_trends_tab = st.tabs(["Spectroscopy", "Periodic trends"])
 with spectroscopy_tab:
-    experience_context("CHEM 1A · Week 01 · Spectroscopy")
-    explore_tab, hydrogen_tab, read_spectrum_tab = stage_tabs(
+    selected_stage = stage_selector(
         ["Explore spectra", "Hydrogen", "Read the spectrum"],
         key="spectroscopy_stage_tabs",
     )
-    with explore_tab:
+    if selected_stage == "Explore spectra":
         render_explore_spectra()
-    with hydrogen_tab:
+    elif selected_stage == "Hydrogen":
         render_hydrogen()
-    with read_spectrum_tab:
+    else:
         render_read_spectrum()
-with atomic_trends_tab:
+with periodic_trends_tab:
     atomic_trends.render()
