@@ -18,7 +18,10 @@ class StageOneAppTests(unittest.TestCase):
         return next(control for control in self.app.button if control.label == label)
 
     def test_tabs_replace_surface_configuration_and_default_to_all_five_atoms(self) -> None:
-        self.assertEqual(["Explore spectra", "Hydrogen", "Read the spectrum"], [tab.label for tab in self.app.tabs])
+        self.assertEqual(
+            ["Spectroscopy", "Explore spectra", "Hydrogen", "Read the spectrum", "Atomic trends"],
+            [tab.label for tab in self.app.tabs],
+        )
         self.assertEqual(0, len(self.app.radio))
         self.assertTrue(all(self.checkbox(name).value for name in ("Hydrogen", "Helium", "Sodium", "Neon", "Mercury")))
         self.assertEqual([], [heading.value for heading in self.app.title])
@@ -27,7 +30,7 @@ class StageOneAppTests(unittest.TestCase):
             any("CHEM 1A · Week 01 · Spectroscopy" in block.value for block in self.app.markdown)
         )
         self.assertEqual(
-            ["Explore atomic spectra", "Hydrogen", "Read the spectrum"],
+            ["Explore atomic spectra", "Hydrogen", "Read the spectrum", "Explore periodic trends"],
             [heading.value for heading in self.app.header],
         )
 
@@ -224,10 +227,10 @@ class StageOneAppTests(unittest.TestCase):
         self.assertIn("Observed 4→2 · 486 nm", rendered)
 
     def test_read_spectrum_has_aligned_representations_and_native_trace_control(self) -> None:
-        self.assertEqual(["Choose a line to trace"], [control.label for control in self.app.selectbox])
+        self.assertIn("Choose a line to trace", [control.label for control in self.app.selectbox])
         self.assertEqual(
             ["Line A", "Line B", "Line C", "Line D", "Line E", "Line F"],
-            list(self.app.selectbox[0].options),
+            list(next(control for control in self.app.selectbox if control.label == "Choose a line to trace").options),
         )
         rendered = [block.value for block in self.app.markdown]
         self.assertTrue(any("The same hydrogen spectrum can be shown in two different ways." in block for block in rendered))
@@ -248,7 +251,7 @@ class StageOneAppTests(unittest.TestCase):
                 for block in rendered
             )
         )
-        self.app.selectbox[0].set_value("Line D").run()
+        next(control for control in self.app.selectbox if control.label == "Choose a line to trace").set_value("Line D").run()
         updated = [block.value for block in self.app.markdown]
         read_rendered = [block for block in updated if "read-line-svg" in block or "intensity-graph-svg" in block]
         self.assertEqual(2, len(read_rendered))

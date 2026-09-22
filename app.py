@@ -1,6 +1,7 @@
 import streamlit as st
 
 from chem1a_ui import apply_shared_visual_system, compare_prompt, experience_context, hard_reveal, stage_tabs
+from experiences.atomic_trends import view as atomic_trends
 from experiences.w01_spectroscopy import hydrogen, read_spectrum, spectrum
 
 
@@ -235,7 +236,7 @@ def render_read_spectrum() -> None:
         st.write("Real spectra can have unequal peak heights. Intensity depends on the physical conditions and on how the spectrum is produced and measured. Here, peak height is held constant so you can focus on the wavelength mapping.")
 
 
-st.set_page_config(page_title="CHEM 1A — Spectroscopy", layout="wide")
+st.set_page_config(page_title="CHEM 1A", layout="wide")
 apply_shared_visual_system()
 
 with st.sidebar:
@@ -247,14 +248,18 @@ with st.sidebar:
         st.caption("Bounded NIST atomic-spectroscopy references")
         st.caption("Selected teaching features; provenance is recorded in this repository.")
 
-experience_context("CHEM 1A · Week 01 · Spectroscopy")
-explore_tab, hydrogen_tab, read_spectrum_tab = stage_tabs(
-    ["Explore spectra", "Hydrogen", "Read the spectrum"],
-    key="spectroscopy_stage_tabs",
-)
-with explore_tab:
-    render_explore_spectra()
-with hydrogen_tab:
-    render_hydrogen()
-with read_spectrum_tab:
-    render_read_spectrum()
+spectroscopy_tab, atomic_trends_tab = st.tabs(["Spectroscopy", "Atomic trends"])
+with spectroscopy_tab:
+    experience_context("CHEM 1A · Week 01 · Spectroscopy")
+    explore_tab, hydrogen_tab, read_spectrum_tab = stage_tabs(
+        ["Explore spectra", "Hydrogen", "Read the spectrum"],
+        key="spectroscopy_stage_tabs",
+    )
+    with explore_tab:
+        render_explore_spectra()
+    with hydrogen_tab:
+        render_hydrogen()
+    with read_spectrum_tab:
+        render_read_spectrum()
+with atomic_trends_tab:
+    atomic_trends.render()
