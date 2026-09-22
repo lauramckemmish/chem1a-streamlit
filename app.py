@@ -84,10 +84,11 @@ def render_explore_spectra() -> None:
     st.header("Explore atomic spectra")
     with st.container(key="chem1a_stage_controls"):
         st.markdown('<p class="chem1a-control-label">Spectrum type</p>', unsafe_allow_html=True)
+        spectrum_type_columns = st.columns(2)
         selected_spectrum_types = {
             spectrum_type
-            for spectrum_type in EXPLORE_SPECTRUM_TYPES
-            if st.checkbox(
+            for column, spectrum_type in zip(spectrum_type_columns, EXPLORE_SPECTRUM_TYPES)
+            if column.checkbox(
                 spectrum_type,
                 value=explore_control_value(f"spectrum_type_{spectrum_type}", spectrum_type == "Emission"),
                 key=f"spectrum_type_{spectrum_type}",
@@ -96,7 +97,7 @@ def render_explore_spectra() -> None:
             )
         }
         st.markdown('<p class="chem1a-control-label">Atoms in view</p>', unsafe_allow_html=True)
-        atom_columns = (*st.columns(3), *st.columns(3))
+        atom_columns = st.columns(5)
         for column, symbol in zip(atom_columns, spectrum.SPECIES_ORDER):
             column.checkbox(
                 spectrum.SPECIES_NAMES[symbol],
@@ -107,10 +108,11 @@ def render_explore_spectra() -> None:
             )
 
         st.markdown('<p class="chem1a-control-label">Representations</p>', unsafe_allow_html=True)
+        representation_columns = st.columns(3)
         selected_representations = {
             representation
-            for representation in EXPLORE_REPRESENTATIONS
-            if st.checkbox(
+            for column, representation in zip(representation_columns, EXPLORE_REPRESENTATIONS)
+            if column.checkbox(
                 representation,
                 value=explore_control_value(
                     f"representation_{representation}", representation == "Visual spectrum"
