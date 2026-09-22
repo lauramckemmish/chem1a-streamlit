@@ -17,6 +17,8 @@ WAVELENGTH_MIN_NM = 380.0
 WAVELENGTH_MAX_NM = 780.0
 PLOT_LEFT = 112.0
 PLOT_RIGHT = 1180.0
+QUANTITATIVE_PLOT_LEFT = 88.0
+QUANTITATIVE_PLOT_RIGHT = 1180.0
 SPECIES_ORDER = ("H", "He", "Na", "Ne", "Hg")
 SPECIES_NAMES = {"H": "Hydrogen", "He": "Helium", "Na": "Sodium", "Ne": "Neon", "Hg": "Mercury"}
 DEFAULT_SELECTED_SPECIES = ("H",)
@@ -46,6 +48,15 @@ def wavelength_x(wavelength_nm: float) -> float:
     return PLOT_LEFT + (wavelength_nm - WAVELENGTH_MIN_NM) * (PLOT_RIGHT - PLOT_LEFT) / (
         WAVELENGTH_MAX_NM - WAVELENGTH_MIN_NM
     )
+
+
+def quantitative_wavelength_x(wavelength_nm: float) -> float:
+    """Map a wavelength onto the compact quantitative comparison axis."""
+    if not WAVELENGTH_MIN_NM <= wavelength_nm <= WAVELENGTH_MAX_NM:
+        raise ValueError("Stage 1 wavelength is outside the 380–780 nm domain.")
+    return QUANTITATIVE_PLOT_LEFT + (wavelength_nm - WAVELENGTH_MIN_NM) * (
+        QUANTITATIVE_PLOT_RIGHT - QUANTITATIVE_PLOT_LEFT
+    ) / (WAVELENGTH_MAX_NM - WAVELENGTH_MIN_NM)
 
 
 def features_for_species(species: Iterable[str]) -> dict[str, list[dict[str, str]]]:
@@ -137,14 +148,60 @@ def render_comparison_svg(species: Iterable[str], *, show_identity: bool = True)
 
 def render_quantitative_emission_svg(species: Iterable[str]) -> str:
     """Render monochrome emission positions so the labelled axis carries wavelength."""
-    return _render_rows_svg(features_for_species(species), SPECIES_NAMES, line_colour="#334155")
+    return render_quantitative_line_positions_svg(species)
 
 
 def render_quantitative_absorption_svg(species: Iterable[str]) -> str:
     """Render monochrome absorption positions without inventing depth or intensity."""
-    return _render_rows_svg(
-        absorption_features_for_species(species), SPECIES_NAMES, line_colour="#334155", spectrum_type="absorption"
+    return render_quantitative_line_positions_svg(species)
+
+
+def render_quantitative_line_positions_svg(species: Iterable[str]) -> str:
+    """Render compact shared-axis monochrome rows for the selected line positions."""
+    rows = features_for_species(species)
+    row_height = 50
+    top_margin = 8
+    axis_baseline = top_margin + row_height * len(rows) + 4
+    height = axis_baseline + 42
+    svg_rows: list[str] = []
+    for index, (symbol, features) in enumerate(rows.items()):
+        top = top_margin + index * row_height
+        baseline = top + 34
+        values = ", ".join(f"{float(feature['wavelength_nm']):.3f}" for feature in features)
+        lines = "".join(
+            f'<line x1="{quantitative_wavelength_x(float(feature["wavelength_nm"])):.2f}" y1="{top + 4}" '
+            f'x2="{quantitative_wavelength_x(float(feature["wavelength_nm"])):.2f}" y2="{baseline}" '
+            'stroke="#334155" class="spectral-line" />'
+            for feature in features
+        )
+        svg_rows.append(
+            f'<g aria-label="{escape(SPECIES_NAMES[symbol])}: {values} nm">'
+            f'<text x="10" y="{top + 25}" class="species">{escape(SPECIES_NAMES[symbol])}</text>'
+            f'<line x1="{QUANTITATIVE_PLOT_LEFT}" y1="{baseline}" '
+            f'x2="{QUANTITATIVE_PLOT_RIGHT}" y2="{baseline}" class="row-axis" />'
+            f'{lines}</g>'
+        )
+    ticks = "".join(
+        f'<line x1="{quantitative_wavelength_x(tick):.2f}" y1="{axis_baseline}" '
+        f'x2="{quantitative_wavelength_x(tick):.2f}" y2="{axis_baseline + 7}" class="tick" />'
+        f'<text x="{quantitative_wavelength_x(tick):.2f}" y="{axis_baseline + 25}" class="tick-label">{tick}</text>'
+        for tick in range(400, 781, 100)
     )
+    return f'''<style>
+.compact-spectrum-svg {{ display: block; width: 100%; height: auto; background: #ffffff; font-family: "Source Sans Pro", Arial, sans-serif; color: #17212b; }}
+.row-axis {{ stroke: #cbd5e1; stroke-width: 1; }}
+.axis, .tick {{ stroke: #64748b; stroke-width: 1.3; }}
+.tick-label {{ fill: #334155; font-size: 15px; text-anchor: middle; }}
+.species {{ fill: #17212b; font-size: 17px; font-weight: 650; }}
+.spectral-line {{ stroke: #334155; stroke-width: 1.2; vector-effect: non-scaling-stroke; stroke-linecap: square; }}
+</style>
+<svg class="compact-spectrum-svg" viewBox="0 0 1200 {height}" role="img" aria-label="Selected atomic line positions on the shared 380 to 780 nanometre scale">
+<title>Selected atomic line positions on a shared wavelength scale</title>
+<desc>Each compact row uses the same wavelength mapping. Monochrome line marks have uniform height and width, so they show position only.</desc>
+{''.join(svg_rows)}
+<line x1="{QUANTITATIVE_PLOT_LEFT}" y1="{axis_baseline}" x2="{QUANTITATIVE_PLOT_RIGHT}" y2="{axis_baseline}" class="axis" />
+{ticks}
+</svg>'''
 
 
 def _render_visual_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[str, str]) -> str:

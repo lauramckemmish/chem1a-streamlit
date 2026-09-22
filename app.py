@@ -59,6 +59,10 @@ def render_explore_evidence(
         for representation in EXPLORE_REPRESENTATIONS:
             if representation not in selected_representations:
                 continue
+            if representation == "Wavelength spectrum":
+                st.markdown("#### Line positions")
+                st.markdown(spectrum.render_quantitative_line_positions_svg(selected_species), unsafe_allow_html=True)
+                continue
             st.markdown(f"#### {representation}")
             for spectrum_type in EXPLORE_SPECTRUM_TYPES:
                 if spectrum_type in selected_spectrum_types:
@@ -70,6 +74,10 @@ def render_explore_evidence(
             st.markdown(f"#### {spectrum.SPECIES_NAMES[symbol]}")
             for representation in EXPLORE_REPRESENTATIONS:
                 if representation not in selected_representations:
+                    continue
+                if representation == "Wavelength spectrum":
+                    st.markdown("##### Line positions")
+                    st.markdown(spectrum.render_quantitative_line_positions_svg([symbol]), unsafe_allow_html=True)
                     continue
                 st.markdown(f"##### {representation}")
                 for spectrum_type in EXPLORE_SPECTRUM_TYPES:

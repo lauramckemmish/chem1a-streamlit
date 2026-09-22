@@ -87,12 +87,18 @@ class StageOneAppTests(unittest.TestCase):
 
     def test_wavelength_representation_is_immediate_and_monochrome(self) -> None:
         self.checkbox("Wavelength spectrum").set_value(True).run()
-        rendered = next(block.value for block in self.app.markdown if "Selected atomic emission-line positions" in block.value)
+        rendered = next(block.value for block in self.app.markdown if "Selected atomic line positions" in block.value)
         self.assertIn("380 to 780 nanometre scale", rendered)
         self.assertIn("tick-label", rendered)
         self.assertIn('stroke="#334155"', rendered)
         self.assertNotIn('stroke="rgb(', rendered)
+        self.assertNotIn("selected features", rendered)
         self.assertTrue(any("Selected atomic visual emission spectra" in block.value for block in self.app.markdown))
+        self.checkbox("Absorption").set_value(True).run()
+        self.assertEqual(
+            1,
+            len([block for block in self.app.markdown if "Selected atomic line positions" in block.value]),
+        )
         captions = [caption.value for caption in self.app.caption]
         self.assertNotIn("Horizontal position gives the wavelength.", captions)
         self.assertFalse(any("Sodium’s two selected lines" in caption for caption in captions))
@@ -104,7 +110,7 @@ class StageOneAppTests(unittest.TestCase):
         self.assertIn("visible-spectrum-band", visual)
         self.assertNotIn("tick-label", visual)
         self.checkbox("Wavelength spectrum").set_value(True).run()
-        quantitative = next(block.value for block in self.app.markdown if "Selected atomic absorption-line positions" in block.value)
+        quantitative = next(block.value for block in self.app.markdown if "Selected atomic line positions" in block.value)
         self.assertIn("tick-label", quantitative)
         self.assertIn('stroke="#334155"', quantitative)
         self.checkbox("Emission").set_value(True).run()
@@ -115,11 +121,11 @@ class StageOneAppTests(unittest.TestCase):
     def test_species_controls_apply_to_reversible_explore_representations(self) -> None:
         self.checkbox("Wavelength spectrum").set_value(True).run()
         self.checkbox("Neon").set_value(False).run()
-        rendered = next(block.value for block in self.app.markdown if "Selected atomic emission-line positions" in block.value)
+        rendered = next(block.value for block in self.app.markdown if "Selected atomic line positions" in block.value)
         self.assertNotIn("Neon", rendered)
         self.checkbox("Emission").set_value(False).run()
         self.checkbox("Absorption").set_value(True).run()
-        rendered = next(block.value for block in self.app.markdown if "Selected atomic absorption-line positions" in block.value)
+        rendered = next(block.value for block in self.app.markdown if "Selected atomic line positions" in block.value)
         self.assertNotIn("Neon", rendered)
 
     def test_intensity_representation_is_available_for_emission_and_absorption(self) -> None:
@@ -137,7 +143,7 @@ class StageOneAppTests(unittest.TestCase):
         self.explore_control("Arrange by").set_value("Atom").run()
         self.assertTrue(all(self.checkbox(name).value for name in ("Emission", "Absorption", "Visual spectrum", "Wavelength spectrum")))
         self.assertTrue(any("Hydrogen" in heading.value for heading in self.app.markdown))
-        self.assertEqual(20, len([block for block in self.app.markdown if "Selected atomic" in block.value]))
+        self.assertEqual(15, len([block for block in self.app.markdown if "Selected atomic" in block.value]))
 
     def test_no_selected_atom_has_a_neutral_prompt(self) -> None:
         for label in ("Hydrogen", "Helium", "Sodium", "Neon", "Mercury"):

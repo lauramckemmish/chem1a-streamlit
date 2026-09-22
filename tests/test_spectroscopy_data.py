@@ -144,8 +144,10 @@ class SpectroscopyDataTests(unittest.TestCase):
     def test_illustrative_intensity_keeps_species_in_separate_traces(self) -> None:
         figure = intensity.figure_for_species(["H", "He"], "Emission")
         self.assertEqual(["Hydrogen", "Helium"], [trace.name for trace in figure.data])
-        self.assertIn("Hydrogen", figure.layout.yaxis.title.text)
-        self.assertIn("Helium", figure.layout.yaxis2.title.text)
+        self.assertIsNone(figure.layout.yaxis.title.text)
+        self.assertIsNone(figure.layout.yaxis2.title.text)
+        self.assertEqual(["Hydrogen", "Helium"], [annotation.text for annotation in figure.layout.annotations])
+        self.assertEqual(260, figure.layout.height)
         self.assertEqual("zoom", figure.layout.dragmode)
         self.assertFalse(intensity.PLOTLY_CONFIG["scrollZoom"])
         self.assertIn("lasso2d", intensity.PLOTLY_CONFIG["modeBarButtonsToRemove"])

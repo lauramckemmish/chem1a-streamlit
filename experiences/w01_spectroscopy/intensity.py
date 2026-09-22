@@ -62,7 +62,7 @@ def illustrative_signal(features: list[dict[str, str]], spectrum_type: str) -> t
 def figure_for_species(species: list[str], spectrum_type: str) -> go.Figure:
     """Render one shared-axis row per selected species without combining their data."""
     rows = spectrum.features_for_species(species)
-    figure = make_subplots(rows=len(rows), cols=1, shared_xaxes=True, vertical_spacing=0.08)
+    figure = make_subplots(rows=len(rows), cols=1, shared_xaxes=True, vertical_spacing=0.05)
     for index, (symbol, features) in enumerate(rows.items(), start=1):
         wavelengths, signal = illustrative_signal(features, spectrum_type)
         figure.add_trace(
@@ -81,30 +81,42 @@ def figure_for_species(species: list[str], spectrum_type: str) -> go.Figure:
             col=1,
         )
         figure.update_yaxes(
-            title_text=(
-                f"{spectrum.SPECIES_NAMES[symbol]}<br>Illustrative intensity"
-                if spectrum_type == "Emission"
-                else f"{spectrum.SPECIES_NAMES[symbol]}<br>Illustrative absorption"
-            ),
             showticklabels=False,
             zeroline=False,
+            showgrid=False,
+            row=index,
+            col=1,
+        )
+        axis_reference = "y domain" if index == 1 else f"y{index} domain"
+        figure.add_annotation(
+            xref="paper",
+            yref=axis_reference,
+            x=-0.02,
+            y=0.5,
+            text=spectrum.SPECIES_NAMES[symbol],
+            showarrow=False,
+            xanchor="right",
+            font={"color": "#17212b", "size": 13},
+        )
+        figure.update_xaxes(
+            range=[spectrum.WAVELENGTH_MIN_NM, spectrum.WAVELENGTH_MAX_NM],
+            showgrid=True,
+            gridcolor="#E5E7EB",
+            showticklabels=index == len(rows),
             row=index,
             col=1,
         )
     figure.update_xaxes(
         title_text="Wavelength / nm",
-        range=[spectrum.WAVELENGTH_MIN_NM, spectrum.WAVELENGTH_MAX_NM],
-        showgrid=True,
-        gridcolor="#E5E7EB",
         row=len(rows),
         col=1,
     )
     figure.update_layout(
-        height=230 * len(rows),
+        height=max(170, 130 * len(rows)),
         dragmode="zoom",
         hovermode="closest",
         template="plotly_white",
         showlegend=False,
-        margin={"l": 85, "r": 25, "t": 20, "b": 55},
+        margin={"l": 100, "r": 25, "t": 12, "b": 45},
     )
     return figure
