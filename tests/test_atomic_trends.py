@@ -56,10 +56,37 @@ class AtomicTrendsDataTests(unittest.TestCase):
     def test_multiple_selections_and_missing_values_are_truthful(self) -> None:
         selected = data.series_for_selection("Groups", [1, 17], "electronegativity_pauling")
         self.assertEqual([1, 3, 9, 11, 17, 19], [row["atomic_number"] for row in selected[:6]])
-        self.assertTrue(all(row["electronegativity_pauling"] is not None for row in selected))
+        self.assertTrue(any(row["electronegativity_pauling"] is None for row in selected))
         all_rows = data.selected_elements("All elements", [])
         self.assertEqual(118, len(all_rows))
         self.assertTrue(any(row["electronegativity_pauling"] is None for row in all_rows))
+
+    def test_period_two_electron_affinity_retains_missing_nitrogen_as_a_plot_gap(self) -> None:
+        rows = data.series_for_selection("Periods", [2], "electron_affinity_kj_mol")
+        figure = view._figure(rows, "Electron affinity", "kJ mol⁻¹", show_labels=True)
+        trace = figure.data[0]
+        self.assertEqual([1, 2, 13, 14, 15, 16, 17, 18], list(trace.x))
+        nitrogen_index = list(trace.x).index(15)
+        self.assertIsNone(trace.y[nitrogen_index])
+        self.assertIsNotNone(trace.y[nitrogen_index - 1])
+        self.assertIsNotNone(trace.y[nitrogen_index + 1])
+        self.assertFalse(trace.connectgaps)
+
+    def test_all_elements_zeff_retains_transition_metals_as_plot_gaps(self) -> None:
+        rows = data.series_for_selection("All elements", [], "effective_nuclear_charge")
+        figure = view._figure(rows, "Effective nuclear charge", "elementary charge", show_labels=False, mode="All elements")
+        trace = figure.data[0]
+        values = dict(zip(trace.x, trace.y))
+        self.assertIsNotNone(values[20])  # Ca
+        self.assertTrue(all(values[atomic_number] is None for atomic_number in range(21, 31)))
+        self.assertIsNotNone(values[31])  # Ga
+        self.assertFalse(trace.connectgaps)
+
+    def test_table_rows_retain_selected_elements_with_unavailable_values(self) -> None:
+        rows = data.series_for_selection("Periods", [2], "electron_affinity_kj_mol")
+        table_rows = view._table_rows(rows, "Electron affinity", "kJ mol⁻¹")
+        nitrogen = next(row for row in table_rows if row["Symbol"] == "N")
+        self.assertIsNone(nitrogen["Electron affinity (kJ mol⁻¹)"])
 
     def test_plotly_figure_keeps_period_labels_and_constrained_interaction(self) -> None:
         rows = data.series_for_selection("Periods", [2, 3], "first_ionisation_energy_kj_mol")

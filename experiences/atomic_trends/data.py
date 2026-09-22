@@ -62,10 +62,9 @@ def selected_elements(mode: str, selections: list[int]) -> list[dict[str, object
 
 
 def series_for_selection(mode: str, selections: list[int], property_key: str) -> list[dict[str, object]]:
-    """Return only available property values, grouped into natural-order series."""
+    """Return complete selected series, retaining unavailable values as None."""
     rows = selected_elements(mode, selections)
-    available = [row for row in rows if row[property_key] is not None]
     if mode == "All elements":
-        return [{**row, "series": "All elements"} for row in available]
+        return [{**row, "series": "All elements"} for row in rows]
     series_key = "period" if mode == "Periods" else "group"
-    return [{**row, "series": f"{series_key.title()} {row[series_key]}"} for row in available]
+    return [{**row, "series": f"{series_key.title()} {row[series_key]}"} for row in rows]

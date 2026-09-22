@@ -30,7 +30,7 @@ def _figure(
     series_names = list(dict.fromkeys(str(row["series"]) for row in rows))
     for index, series_name in enumerate(series_names):
         series_rows = [row for row in rows if row["series"] == series_name]
-        values = [float(row[property_key]) for row in series_rows]
+        values = [float(row[property_key]) if row[property_key] is not None else None for row in series_rows]
         x_values = [
             row["period"] if mode == "Groups" else row["group"] if mode == "Periods" else row["atomic_number"]
             for row in series_rows
@@ -50,6 +50,7 @@ def _figure(
                 textfont={"size": 12},
                 line={"color": TRACE_COLOURS[index % len(TRACE_COLOURS)], "width": 2},
                 marker={"color": TRACE_COLOURS[index % len(TRACE_COLOURS)], "size": 9},
+                connectgaps=False,
                 customdata=customdata,
                 hovertemplate=(
                     "<b>%{customdata[0]} (%{customdata[1]})</b><br>"
@@ -81,6 +82,18 @@ def _figure(
     return figure
 
 
+def _table_rows(rows: list[dict[str, object]], property_label: str, units: str) -> list[dict[str, object]]:
+    """Present the complete selected slice, including unavailable values."""
+    property_key = data.PROPERTY_METADATA[property_label][0]
+    return [
+        {
+            "Element": row["element_name"], "Symbol": row["symbol"], "Atomic number": row["atomic_number"],
+            "Period": row["period"], "Group": row["group"], f"{property_label} ({units})": row[property_key],
+        }
+        for row in rows
+    ]
+
+
 def _subset_checkboxes(label: str, values: range, key_prefix: str, default: int, columns: int) -> list[int]:
     st.markdown(f"**{label}**")
     selected: list[int] = []
@@ -109,7 +122,7 @@ def render() -> None:
 
     property_key, _, units = data.PROPERTY_METADATA[property_label]
     rows = data.series_for_selection(mode, selections, property_key)
-    if not rows:
+    if not rows or not any(row[property_key] is not None for row in rows):
         st.info("Choose at least one period or group with available reference values.")
         return
     st.plotly_chart(
@@ -117,12 +130,5 @@ def render() -> None:
         width="stretch",
         config=PLOTLY_CONFIG,
     )
-    table_rows = [
-        {
-            "Element": row["element_name"], "Symbol": row["symbol"], "Atomic number": row["atomic_number"],
-            "Period": row["period"], "Group": row["group"], f"{property_label} ({units})": row[property_key],
-        }
-        for row in rows
-    ]
     with st.expander("Data", expanded=False):
-        st.dataframe(pd.DataFrame(table_rows), width="stretch", hide_index=True)
+        st.dataframe(pd.DataFrame(_table_rows(rows, property_label, units)), width="stretch", hide_index=True)
