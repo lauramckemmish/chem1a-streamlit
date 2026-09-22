@@ -71,23 +71,11 @@ Do not initially explain the origin of line structure or place an energy-level/R
 
 **OBSERVATION:** Rendered inspection found a single-hydrogen default too visually sparse to make the barcode-comparison task obvious.
 
-**DECISION:** Explore spectra is one reusable phenomenon surface with an intentional representational progression. On the first visit (Move A), learners inspect all five visual/barcode emission spectra: dark fields with bright coloured lines, where the phenomenon and pattern come before numerical measurement. Learners encounter the evidence before configuring the app. “What changes? What stays the same?” is the sole comparison prompt; atom controls sit below it as secondary “Spectra in view” controls. All five start selected, and learners may remove spectra to isolate a comparison without resetting the representational progression. Their calmer indigo selected state avoids cumulative yellow surface area.
+**DECISION:** Explore spectra is a direct, reversible data/representation surface. Learners choose emission or absorption; visual spectrum, wavelength spectrum, or intensity versus wavelength; and the neutral species to inspect. All five species start selected, while “Spectra in view” remains secondary to the evidence and the sole prompt remains “What changes? What stays the same?”
 
-After workshop work reconnecting wavelength, frequency and photon energy (Move B, outside the app), learners return in Move C and intentionally reveal the quantitative wavelength representation. The same selected features are transformed/enriched into a labelled 380–780 nm line spectrum; this is not an arbitrary display preference or a duplicated second spectrum for every atom. The barcode and wavelength-axis spectrum are scientifically close but cognitively distinct: the first asks, “What does the emitted light look like?” while the second asks, “Where exactly are those features?”
+Visual spectra use wavelength colour as a phenomenon cue. Quantitative wavelength spectra use monochrome equal-geometry marks so the labelled horizontal coordinate carries wavelength. Absorption uses the same selected teaching-feature positions as emission and does not model relative strength.
 
-Only after that wavelength reveal can learners intentionally reveal the absorption comparison. Each selected atom's quantitative emission and absorption representations are paired together. The absorption reveal cannot precede the wavelength representation, and both reveals persist for the session.
-
-**OBSERVATION:** The first per-atom absorption rendering was scientifically correct but vertically repetitive.
-
-**DECISION:** Emission and absorption remain paired by atom as compact comparison blocks, with atom identity outside the two plots and no repeated feature-count chrome. The previous observation prompt is replaced by the forward question, “Emission and absorption lines occur at the same wavelengths. Why?” This creates the need for the subsequent energy-level model without asking learners to explain it prematurely.
-
-For this bounded first-year representation, absorption deliberately uses the same selected teaching-feature wavelengths as emission. It is a comparison of characteristic positions, not a model of relative line strength. The absorption display is a continuous illustrative visible-spectrum band with equal dark lines at those positions.
-
-Separate aligned atomic spectra are the current core representation. Combined spectra are removed from the learner-facing design and parked only as a possible future composition/mixture feature if a real learning need emerges. The hard reveal persists for the session; after it is activated, each selected atom's emission and absorption representations are paired together. Screen 1 stops before explanatory models, transitions, calculations, or line assignments.
-
-The wider representational progression is visual/barcode spectrum → quantitative wavelength line spectrum → intensity-vs-wavelength graph. The graph is implemented in the separate third learner surface, Read the spectrum. The sidebar provides shared CHEM 1A shell and verified resource/source context; it is not stage navigation.
-
-**DECISION:** The shared CHEM 1A shell uses compact course/week/experience context so the active learner surface and scientific evidence dominate the main-page hierarchy. Course identity remains available in both the compact main context and sidebar because the sidebar may be collapsed.
+The intensity representation is an illustrative position translation: equal-width Gaussian peaks or dips are centred exactly at stored reference wavelengths. Their geometry is not measured intensity, linewidth, or absorption depth. Selected species remain in separate rows so their positions can be compared without mixing data. Screen 1 stops before explanatory models, transitions, calculations, or line assignments.
 
 ## Stage 2 — Hydrogen
 
@@ -100,7 +88,7 @@ Whiteboard and paper remain the thinking surfaces for reasoning about energy lev
 
 Transition labels are an optional reference reveal, not a gate or reward. A collapsed bottom extension locates selected NIST Lyman, Balmer, and Paschen references across UV, visible, and IR, with readable local series views. This establishes that visible Balmer features are only part of hydrogen's spectrum without becoming a series calculator.
 
-Hydrogen-like-ion comparison remains an optional later extension whose representation is not yet settled. Read the spectrum is the implemented separate third cognitive surface.
+Hydrogen-like-ion comparison remains an optional later extension whose representation is not yet settled.
 
 Students return to the same hydrogen spectral representation encountered earlier.
 
@@ -115,47 +103,6 @@ Students calculate wavelengths elsewhere in the workshop and use the app to insp
 **PROTECTED DECISION:** the app must **not** calculate the required hydrogen transition wavelength for the learner.
 
 Do not add a transition calculator or automatically reveal the calculated answer.
-
-## Stage 3 — Read the spectrum
-
-**DECISION:** Read the spectrum is a separate third learner surface. Its main cognitive job is quantitative line spectrum → intensity-vs-wavelength graph; the earlier barcode transition is not repeated here.
-
-Students inspect the established six-line hydrogen detail in both representations, vertically aligned on exactly the same wavelength coordinate system. One example line ↔ peak mapping is explicit; learners then trace another selected feature. **DECISION:** Read the spectrum preserves the quantitative wavelength axis but does not expose transition assignments or exact line wavelengths, because those values would prematurely reveal the Hydrogen prediction payoff. Neutral feature labels support the representation-translation task without becoming an answer key. The paired representations should visually dominate the surface through aligned, readable plots.
-
-### Critical visual constraint
-
-When both appear, they must share exactly the same wavelength scale and horizontal coordinate system.
-
-A line at wavelength λ must sit vertically above the corresponding peak at wavelength λ.
-
-Students should understand:
-
-- horizontal position = wavelength in both;
-- a line corresponds to a peak at the same wavelength;
-- the graph provides a y-axis for intensity; the initial equal-height representation deliberately holds that information constant to focus on position mapping.
-
-The experience may explicitly demonstrate one line/peak correspondence.
-
-Students should then translate at least one further correspondence themselves through the workshop.
-
-Do not annotate every mapping so completely that the representation-reading task disappears.
-
-### Position-mapping representation v1
-
-The initial graph uses equal-height peaks as an explicitly simplified **position-mapping** representation. Its purpose is to isolate:
-
-line at wavelength λ
-→ peak at the same wavelength λ
-
-Equal-height peaks deliberately suppress intensity information and must be clearly described as illustrative rather than physical relative intensities. A brief optional “What about peak height?” reveal notes that real observed intensity can depend on physical conditions and how the spectrum is produced or measured. Do not present this as a realistic intensity spectrum or invent plausible-looking intensity ratios.
-
-### Optional intensity extension
-
-An optional later learner extension, such as “What about peak height?”, may introduce the idea that real spectra contain additional information in peak intensity. It may show unequal heights only when appropriately supported.
-
-Do not imply that peak height equals transition probability. Observed relative line intensity may also depend on populations, excitation/source conditions, measurement context and other physical/experimental factors.
-
-This is optional depth for students ready for more spectroscopy, not part of the mandatory representation-mapping pathway.
 
 ## Hydrogen extension — Beyond visible
 
@@ -197,7 +144,7 @@ Critical distinction:
 
 neutral helium is **not** the Z=2 version of hydrogen.
 
-Do not give this extension equal visual weight to the required three-surface v1 journey.
+Do not give this extension equal visual weight to the required Explore/Hydrogen pathway.
 
 ## Molecular spectra
 
@@ -215,7 +162,6 @@ Implemented learner navigation:
 
 Explore spectra
 Hydrogen
-Read the spectrum
 
 Beyond-visible hydrogen content is contained in Hydrogen’s progressive-disclosure extension, not a separate tab. Optional hydrogenic-ion exploration remains parked for later.
 

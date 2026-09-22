@@ -2,7 +2,7 @@ import streamlit as st
 
 from chem1a_ui import apply_shared_visual_system, compare_prompt, stage_selector
 from experiences.atomic_trends import view as atomic_trends
-from experiences.w01_spectroscopy import hydrogen, read_spectrum, spectrum
+from experiences.w01_spectroscopy import hydrogen, intensity, spectrum
 
 
 EXPLORE_DEFAULT_SELECTED_SPECIES = spectrum.SPECIES_ORDER
@@ -30,7 +30,7 @@ def render_explore_spectra() -> None:
         "Spectrum type", ["Emission", "Absorption"], default="Emission", key="explore_spectrum_type"
     )
     representation = st.segmented_control(
-        "Representation", ["Visual spectrum", "Wavelength spectrum"],
+        "Representation", ["Visual spectrum", "Wavelength spectrum", "Intensity vs wavelength"],
         default="Visual spectrum", key="explore_representation",
     )
     selected_species = [
@@ -45,7 +45,7 @@ def render_explore_spectra() -> None:
             st.caption("Colour is a wavelength cue. The pattern of line positions is what to compare.")
         elif spectrum_type == "Absorption" and representation == "Visual spectrum":
             st.markdown(spectrum.render_visual_absorption_comparison_svg(selected_species), unsafe_allow_html=True)
-        else:
+        elif representation == "Wavelength spectrum":
             quantitative = (
                 spectrum.render_quantitative_emission_svg
                 if spectrum_type == "Emission"
@@ -55,6 +55,16 @@ def render_explore_spectra() -> None:
             st.caption("Horizontal position gives the wavelength.")
             if "Na" in selected_species:
                 st.caption("Sodium’s two selected lines are at 588.995 and 589.592 nm. They almost overlap on this scale.")
+        else:
+            st.plotly_chart(
+                intensity.figure_for_species(selected_species, spectrum_type),
+                width="stretch",
+                config=intensity.PLOTLY_CONFIG,
+            )
+            if spectrum_type == "Emission":
+                st.caption("The line and peak are centred at the same wavelength. Peak shape and height are simplified here so you can focus on position.")
+            else:
+                st.caption("The line and dip are centred at the same wavelength. Shape and depth are simplified here so you can focus on position.")
         compare_prompt("What changes? What stays the same?")
 
     else:
@@ -186,43 +196,18 @@ def render_hydrogen() -> None:
                 st.markdown(hydrogen.render_series_detail_svg(series), unsafe_allow_html=True)
 
 
-def render_read_spectrum() -> None:
-    """Render the bounded line-position to intensity-graph translation surface."""
-    st.header("Read the spectrum")
-    st.write("The same hydrogen spectrum can be shown in two different ways.")
-    feature_options = read_spectrum.feature_options()
-    if st.session_state.get("read_spectrum_trace") not in feature_options:
-        st.session_state["read_spectrum_trace"] = feature_options[0]
-    selected_feature_label = st.session_state["read_spectrum_trace"]
-    st.markdown("**Line spectrum**")
-    st.markdown(read_spectrum.render_line_spectrum_svg(selected_feature_label), unsafe_allow_html=True)
-    st.markdown("**Intensity vs wavelength**")
-    st.markdown(read_spectrum.render_intensity_graph_svg(selected_feature_label), unsafe_allow_html=True)
-    st.caption("The line and peak are at the same wavelength. Peak height is simplified here so you can focus on position.")
-    st.selectbox(
-        "Choose a line to trace",
-        feature_options,
-        key="read_spectrum_trace",
-    )
-    compare_prompt("Find another line and its matching peak. What stays the same? What has been added?", key="chem1a_read_spectrum_prompt")
-    with st.expander("What about peak height?", expanded=False):
-        st.write("Real spectra can have unequal peak heights. Intensity depends on the physical conditions and on how the spectrum is produced and measured. Here, peak height is held constant so you can focus on the wavelength mapping.")
-
-
 st.set_page_config(page_title="CHEM 1A", layout="wide")
 apply_shared_visual_system()
 
 spectroscopy_tab, periodic_trends_tab = st.tabs(["Spectroscopy", "Periodic trends"])
 with spectroscopy_tab:
     selected_stage = stage_selector(
-        ["Explore spectra", "Hydrogen", "Read the spectrum"],
+        ["Explore spectra", "Hydrogen"],
         key="spectroscopy_stage_tabs",
     )
     if selected_stage == "Explore spectra":
         render_explore_spectra()
     elif selected_stage == "Hydrogen":
         render_hydrogen()
-    else:
-        render_read_spectrum()
 with periodic_trends_tab:
     atomic_trends.render()

@@ -4,8 +4,8 @@ from decimal import Decimal
 from chem1a_ui import UNSW_COLOURS
 from experiences.w01_spectroscopy import data
 from experiences.w01_spectroscopy import hydrogen
-from experiences.w01_spectroscopy import read_spectrum
 from experiences.w01_spectroscopy import spectrum
+from experiences.w01_spectroscopy import intensity
 
 
 class SpectroscopyDataTests(unittest.TestCase):
@@ -128,47 +128,27 @@ class SpectroscopyDataTests(unittest.TestCase):
         self.assertEqual(["3→2", "4→2", "5→2", "6→2", "7→2", "8→2"], [hydrogen.transition_label(feature) for feature in features])
         self.assertEqual(features, data.hydrogen_detail_features())
 
-    def test_read_spectrum_reuses_balmer_features_and_shared_coordinates(self) -> None:
-        features = read_spectrum.balmer_features()
-        self.assertEqual(features, hydrogen.balmer_detail_features())
-        self.assertEqual(6, len(features))
-        self.assertEqual(["Line A", "Line B", "Line C", "Line D", "Line E", "Line F"], read_spectrum.feature_options())
-        labelled_features = read_spectrum.labelled_features()
-        self.assertEqual(
-            sorted(float(feature["wavelength_nm"]) for feature in features),
-            [float(labelled_features[label]["wavelength_nm"]) for label in read_spectrum.feature_options()],
-        )
-        line_svg = read_spectrum.render_line_spectrum_svg("Line A")
-        graph_svg = read_spectrum.render_intensity_graph_svg("Line A")
-        for feature in features:
-            x = spectrum.wavelength_x(float(feature["wavelength_nm"]))
-            self.assertIn(f'x1="{x:.2f}"', line_svg)
-            self.assertIn(f'L {x:.2f} ', graph_svg)
-        self.assertIn("Wavelength / nm", line_svg)
-        self.assertIn("Intensity", graph_svg)
-        self.assertIn("Peak height is not measured intensity", graph_svg)
-        for rendered in (line_svg, graph_svg):
-            self.assertIn("Example line", rendered)
-            self.assertIn("Your trace", rendered)
-            self.assertNotIn("3→2", rendered)
-            self.assertNotIn("4→2", rendered)
-            self.assertNotIn("656.285", rendered)
-            self.assertNotIn("486.136", rendered)
+    def test_illustrative_intensity_centres_and_geometry_use_only_stored_positions(self) -> None:
+        sodium = spectrum.features_for_species(["Na"])["Na"]
+        wavelengths, emission = intensity.illustrative_signal(sodium, "Emission")
+        _, absorption = intensity.illustrative_signal(sodium, "Absorption")
+        for feature in sodium:
+            centre = float(feature["wavelength_nm"])
+            centre_index = wavelengths.index(centre)
+            self.assertGreaterEqual(emission[centre_index], intensity.ILLUSTRATIVE_PEAK_HEIGHT)
+            self.assertLessEqual(absorption[centre_index], 1.0 - intensity.ILLUSTRATIVE_DIP_DEPTH)
+        self.assertEqual(1.0, intensity.gaussian(500.0, 500.0))
+        self.assertEqual(1.0, intensity.ILLUSTRATIVE_PEAK_HEIGHT)
+        self.assertEqual(0.35, intensity.ILLUSTRATIVE_DIP_DEPTH)
 
-    def test_read_spectrum_offsets_coincident_example_and_trace_labels(self) -> None:
-        for rendered in (
-            read_spectrum.render_line_spectrum_svg(read_spectrum.EXAMPLE_FEATURE_LABEL),
-            read_spectrum.render_intensity_graph_svg(read_spectrum.EXAMPLE_FEATURE_LABEL),
-        ):
-            self.assertIn('text-anchor="end" class="guide-label">Example line', rendered)
-            self.assertIn('text-anchor="start" class="guide-label">Your trace', rendered)
-            self.assertIn(f'viewBox="0 0 1200 {read_spectrum.SVG_HEIGHT}"', rendered)
-
-    def test_read_spectrum_peak_height_is_equal_and_illustrative(self) -> None:
-        rendered = read_spectrum.render_intensity_graph_svg("Line B")
-        self.assertEqual(6, rendered.count('class="illustrative-peak"'))
-        self.assertEqual(88.0, read_spectrum.ILLUSTRATIVE_PEAK_HEIGHT)
-        self.assertNotIn("relative_intensity", rendered)
+    def test_illustrative_intensity_keeps_species_in_separate_traces(self) -> None:
+        figure = intensity.figure_for_species(["H", "He"], "Emission")
+        self.assertEqual(["Hydrogen", "Helium"], [trace.name for trace in figure.data])
+        self.assertIn("Hydrogen", figure.layout.yaxis.title.text)
+        self.assertIn("Helium", figure.layout.yaxis2.title.text)
+        self.assertEqual("zoom", figure.layout.dragmode)
+        self.assertFalse(intensity.PLOTLY_CONFIG["scrollZoom"])
+        self.assertIn("lasso2d", intensity.PLOTLY_CONFIG["modeBarButtonsToRemove"])
 
     def test_hydrogen_transition_lookup_uses_existing_stored_features(self) -> None:
         target = hydrogen.observed_feature_for_transition(3, 2)

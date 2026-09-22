@@ -12,8 +12,6 @@ class StageOneAppTests(unittest.TestCase):
         self.app = AppTest.from_file(str(APP_PATH)).run()
         if "hydrogen" in self._testMethodName:
             self.app.segmented_control[0].set_value("Hydrogen").run()
-        elif "read_spectrum" in self._testMethodName:
-            self.app.segmented_control[0].set_value("Read the spectrum").run()
 
     def checkbox(self, label: str):
         return next(control for control in self.app.checkbox if control.label == label)
@@ -30,7 +28,7 @@ class StageOneAppTests(unittest.TestCase):
             [tab.label for tab in self.app.tabs],
         )
         self.assertEqual(
-            ["Explore spectra", "Hydrogen", "Read the spectrum"],
+            ["Explore spectra", "Hydrogen"],
             list(self.app.segmented_control[0].options),
         )
         self.assertEqual(0, len(self.app.radio))
@@ -60,6 +58,10 @@ class StageOneAppTests(unittest.TestCase):
         self.assertNotIn("tick-label", rendered)
         self.assertEqual("Emission", self.explore_control("Spectrum type").value)
         self.assertEqual("Visual spectrum", self.explore_control("Representation").value)
+        self.assertEqual(
+            ["Visual spectrum", "Wavelength spectrum", "Intensity vs wavelength"],
+            list(self.explore_control("Representation").options),
+        )
         page_copy = [block.value for block in self.app.markdown]
         self.assertFalse(any("Compare the patterns in these atomic spectra." in block for block in page_copy))
         self.assertIn(
@@ -116,6 +118,18 @@ class StageOneAppTests(unittest.TestCase):
         self.explore_control("Spectrum type").set_value("Absorption").run()
         rendered = next(block.value for block in self.app.markdown if "Selected atomic absorption-line positions" in block.value)
         self.assertNotIn("Neon", rendered)
+
+    def test_intensity_representation_is_available_for_emission_and_absorption(self) -> None:
+        self.explore_control("Representation").set_value("Intensity vs wavelength").run()
+        self.assertIn(
+            "The line and peak are centred at the same wavelength. Peak shape and height are simplified here so you can focus on position.",
+            [caption.value for caption in self.app.caption],
+        )
+        self.explore_control("Spectrum type").set_value("Absorption").run()
+        self.assertIn(
+            "The line and dip are centred at the same wavelength. Shape and depth are simplified here so you can focus on position.",
+            [caption.value for caption in self.app.caption],
+        )
 
     def test_no_selected_atom_has_a_neutral_prompt(self) -> None:
         for label in ("Hydrogen", "Helium", "Sodium", "Neon", "Mercury"):
@@ -206,38 +220,6 @@ class StageOneAppTests(unittest.TestCase):
         self.button("Plot my prediction").click().run()
         rendered = next(block.value for block in self.app.markdown if "hydrogen-local-svg" in block.value)
         self.assertIn("Observed 4→2 · 486 nm", rendered)
-
-    def test_read_spectrum_has_aligned_representations_and_native_trace_control(self) -> None:
-        self.assertIn("Choose a line to trace", [control.label for control in self.app.selectbox])
-        self.assertEqual(
-            ["Line A", "Line B", "Line C", "Line D", "Line E", "Line F"],
-            list(next(control for control in self.app.selectbox if control.label == "Choose a line to trace").options),
-        )
-        rendered = [block.value for block in self.app.markdown]
-        self.assertTrue(any("The same hydrogen spectrum can be shown in two different ways." in block for block in rendered))
-        self.assertTrue(any("**Line spectrum**" in block for block in rendered))
-        self.assertTrue(any("**Intensity vs wavelength**" in block for block in rendered))
-        self.assertTrue(any("Hydrogen line spectrum" in block for block in rendered))
-        self.assertTrue(any("Hydrogen intensity versus wavelength" in block for block in rendered))
-        self.assertIn(
-            "The line and peak are at the same wavelength. Peak height is simplified here so you can focus on position.",
-            [caption.value for caption in self.app.caption],
-        )
-        self.assertTrue(any("Find another line and its matching peak. What stays the same? What has been added?" in block for block in rendered))
-        self.assertIn("What about peak height?", [section.label for section in self.app.expander])
-        self.assertTrue(
-            any(
-                "Real spectra can have unequal peak heights. Intensity depends on the physical conditions and on how the spectrum is produced and measured. Here, peak height is held constant so you can focus on the wavelength mapping."
-                in block
-                for block in rendered
-            )
-        )
-        next(control for control in self.app.selectbox if control.label == "Choose a line to trace").set_value("Line D").run()
-        updated = [block.value for block in self.app.markdown]
-        read_rendered = [block for block in updated if "read-line-svg" in block or "intensity-graph-svg" in block]
-        self.assertEqual(2, len(read_rendered))
-        self.assertTrue(all("Your trace" in block for block in read_rendered))
-        self.assertTrue(all("3→2" not in block and "656.285" not in block for block in read_rendered))
 
     def test_no_learner_sidebar_is_rendered(self) -> None:
         self.assertEqual([], list(self.app.sidebar.markdown))
