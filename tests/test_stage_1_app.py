@@ -47,7 +47,8 @@ class StageOneAppTests(unittest.TestCase):
         self.assertNotIn("Separate spectra", labels)
         self.assertFalse(any("Combined selected lines" in block.value for block in self.app.markdown))
         rendered = [block.value for block in self.app.markdown]
-        self.assertTrue(any("Spectra in view" in block for block in rendered))
+        self.assertTrue(any("Atoms in view" in block for block in rendered))
+        self.assertTrue(any("Representations" in block for block in rendered))
         self.assertFalse(any("Focus the comparison" in block for block in rendered))
 
     def test_default_explore_is_a_visual_barcode_without_wavelength_axis(self) -> None:
@@ -57,19 +58,20 @@ class StageOneAppTests(unittest.TestCase):
             self.assertIn(species, rendered)
         self.assertNotIn("tick-label", rendered)
         self.assertEqual("Emission", self.explore_control("Spectrum type").value)
-        self.assertEqual("Visual spectrum", self.explore_control("Representation").value)
-        self.assertEqual(
-            ["Visual spectrum", "Wavelength spectrum", "Intensity vs wavelength"],
-            list(self.explore_control("Representation").options),
-        )
+        self.assertTrue(self.checkbox("Visual spectrum").value)
+        self.assertFalse(self.checkbox("Wavelength spectrum").value)
+        self.assertFalse(self.checkbox("Intensity vs wavelength").value)
         page_copy = [block.value for block in self.app.markdown]
+        self.assertFalse(any("Compare" in block for block in page_copy))
+        self.assertFalse(
+            any("What changes? What stays the same?" in block for block in page_copy)
+        )
         self.assertFalse(any("Compare the patterns in these atomic spectra." in block for block in page_copy))
         self.assertNotIn(
             "Colour is a wavelength cue. The pattern of line positions is what to compare.",
             [caption.value for caption in self.app.caption],
         )
-        self.assertTrue(any("What changes? What stays the same?" in block for block in page_copy))
-        self.assertTrue(any("Spectra in view" in block for block in page_copy))
+        self.assertTrue(any("Atoms in view" in block for block in page_copy))
         self.assertNotIn("Show wavelength scale", [control.label for control in self.app.button])
         self.assertNotIn("Reveal absorption spectra", [control.label for control in self.app.button])
 
@@ -82,13 +84,13 @@ class StageOneAppTests(unittest.TestCase):
         self.assertIn("588.995", rendered)
 
     def test_wavelength_representation_is_immediate_and_monochrome(self) -> None:
-        self.explore_control("Representation").set_value("Wavelength spectrum").run()
+        self.checkbox("Wavelength spectrum").set_value(True).run()
         rendered = next(block.value for block in self.app.markdown if "Selected atomic emission-line positions" in block.value)
         self.assertIn("380 to 780 nanometre scale", rendered)
         self.assertIn("tick-label", rendered)
         self.assertIn('stroke="#334155"', rendered)
         self.assertNotIn('stroke="rgb(', rendered)
-        self.assertFalse(any("Selected atomic visual emission spectra" in block.value for block in self.app.markdown))
+        self.assertTrue(any("Selected atomic visual emission spectra" in block.value for block in self.app.markdown))
         self.assertIn(
             "Horizontal position gives the wavelength.",
             [caption.value for caption in self.app.caption],
@@ -102,16 +104,16 @@ class StageOneAppTests(unittest.TestCase):
         visual = next(block.value for block in self.app.markdown if "Selected atomic visual absorption spectra" in block.value)
         self.assertIn("visible-spectrum-band", visual)
         self.assertNotIn("tick-label", visual)
-        self.explore_control("Representation").set_value("Wavelength spectrum").run()
+        self.checkbox("Wavelength spectrum").set_value(True).run()
         quantitative = next(block.value for block in self.app.markdown if "Selected atomic absorption-line positions" in block.value)
         self.assertIn("tick-label", quantitative)
         self.assertIn('stroke="#334155"', quantitative)
         self.explore_control("Spectrum type").set_value("Emission").run()
-        self.explore_control("Representation").set_value("Visual spectrum").run()
+        self.checkbox("Wavelength spectrum").set_value(False).run()
         self.assertTrue(any("Selected atomic visual emission spectra" in block.value for block in self.app.markdown))
 
     def test_species_controls_apply_to_reversible_explore_representations(self) -> None:
-        self.explore_control("Representation").set_value("Wavelength spectrum").run()
+        self.checkbox("Wavelength spectrum").set_value(True).run()
         self.checkbox("Neon").set_value(False).run()
         rendered = next(block.value for block in self.app.markdown if "Selected atomic emission-line positions" in block.value)
         self.assertNotIn("Neon", rendered)
@@ -120,7 +122,7 @@ class StageOneAppTests(unittest.TestCase):
         self.assertNotIn("Neon", rendered)
 
     def test_intensity_representation_is_available_for_emission_and_absorption(self) -> None:
-        self.explore_control("Representation").set_value("Intensity vs wavelength").run()
+        self.checkbox("Intensity vs wavelength").set_value(True).run()
         self.assertIn(
             "The line and peak are centred at the same wavelength. Peak shape and height are simplified here so you can focus on position.",
             [caption.value for caption in self.app.caption],
@@ -135,6 +137,10 @@ class StageOneAppTests(unittest.TestCase):
         for label in ("Hydrogen", "Helium", "Sodium", "Neon", "Mercury"):
             self.checkbox(label).set_value(False).run()
         self.assertEqual(["Choose at least one spectrum to keep in view."], [notice.value for notice in self.app.info])
+
+    def test_no_selected_representation_has_a_neutral_prompt(self) -> None:
+        self.checkbox("Visual spectrum").set_value(False).run()
+        self.assertEqual(["Choose at least one representation to display."], [notice.value for notice in self.app.info])
 
     def hydrogen_input(self, label: str):
         return next(control for control in self.app.number_input if control.label == label)

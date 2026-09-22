@@ -26,51 +26,11 @@ def hydrogen_evidence_revealed() -> bool:
 def render_explore_spectra() -> None:
     """Render the established first spectroscopy phenomenon surface."""
     st.header("Explore atomic spectra")
-    spectrum_type = st.segmented_control(
-        "Spectrum type", ["Emission", "Absorption"], default="Emission", key="explore_spectrum_type"
-    )
-    representation = st.segmented_control(
-        "Representation", ["Visual spectrum", "Wavelength spectrum", "Intensity vs wavelength"],
-        default="Visual spectrum", key="explore_representation",
-    )
-    selected_species = [
-        symbol
-        for symbol in spectrum.SPECIES_ORDER
-        if explore_control_value(f"atom_{symbol}", symbol in EXPLORE_DEFAULT_SELECTED_SPECIES)
-    ]
-
-    if selected_species:
-        if spectrum_type == "Emission" and representation == "Visual spectrum":
-            st.markdown(spectrum.render_visual_comparison_svg(selected_species), unsafe_allow_html=True)
-        elif spectrum_type == "Absorption" and representation == "Visual spectrum":
-            st.markdown(spectrum.render_visual_absorption_comparison_svg(selected_species), unsafe_allow_html=True)
-        elif representation == "Wavelength spectrum":
-            quantitative = (
-                spectrum.render_quantitative_emission_svg
-                if spectrum_type == "Emission"
-                else spectrum.render_quantitative_absorption_svg
-            )
-            st.markdown(quantitative(selected_species), unsafe_allow_html=True)
-            st.caption("Horizontal position gives the wavelength.")
-            if "Na" in selected_species:
-                st.caption("Sodium’s two selected lines are at 588.995 and 589.592 nm. They almost overlap on this scale.")
-        else:
-            st.plotly_chart(
-                intensity.figure_for_species(selected_species, spectrum_type),
-                width="stretch",
-                config=intensity.PLOTLY_CONFIG,
-            )
-            if spectrum_type == "Emission":
-                st.caption("The line and peak are centred at the same wavelength. Peak shape and height are simplified here so you can focus on position.")
-            else:
-                st.caption("The line and dip are centred at the same wavelength. Shape and depth are simplified here so you can focus on position.")
-        compare_prompt("What changes? What stays the same?")
-
-    else:
-        st.info("Choose at least one spectrum to keep in view.")
-
     with st.container(key="chem1a_stage_controls"):
-        st.markdown('<p class="chem1a-control-label">Spectra in view</p>', unsafe_allow_html=True)
+        spectrum_type = st.segmented_control(
+            "Spectrum type", ["Emission", "Absorption"], default="Emission", key="explore_spectrum_type"
+        )
+        st.markdown('<p class="chem1a-control-label">Atoms in view</p>', unsafe_allow_html=True)
         atom_columns = (*st.columns(3), *st.columns(3))
         for column, symbol in zip(atom_columns, spectrum.SPECIES_ORDER):
             column.checkbox(
@@ -80,6 +40,59 @@ def render_explore_spectra() -> None:
                 on_change=remember_explore_control,
                 args=(f"atom_{symbol}",),
             )
+
+        st.markdown('<p class="chem1a-control-label">Representations</p>', unsafe_allow_html=True)
+        selected_representations = {
+            representation
+            for representation in ("Visual spectrum", "Wavelength spectrum", "Intensity vs wavelength")
+            if st.checkbox(
+                representation,
+                value=explore_control_value(
+                    f"representation_{representation}", representation == "Visual spectrum"
+                ),
+                key=f"representation_{representation}",
+                on_change=remember_explore_control,
+                args=(f"representation_{representation}",),
+            )
+        }
+
+    selected_species = [
+        symbol
+        for symbol in spectrum.SPECIES_ORDER
+        if explore_control_value(f"atom_{symbol}", symbol in EXPLORE_DEFAULT_SELECTED_SPECIES)
+    ]
+
+    if not selected_species:
+        st.info("Choose at least one spectrum to keep in view.")
+    elif not selected_representations:
+        st.info("Choose at least one representation to display.")
+    else:
+        if "Visual spectrum" in selected_representations and spectrum_type == "Emission":
+            st.markdown(spectrum.render_visual_comparison_svg(selected_species), unsafe_allow_html=True)
+        elif "Visual spectrum" in selected_representations:
+            st.markdown(spectrum.render_visual_absorption_comparison_svg(selected_species), unsafe_allow_html=True)
+
+        if "Wavelength spectrum" in selected_representations:
+            quantitative = (
+                spectrum.render_quantitative_emission_svg
+                if spectrum_type == "Emission"
+                else spectrum.render_quantitative_absorption_svg
+            )
+            st.markdown(quantitative(selected_species), unsafe_allow_html=True)
+            st.caption("Horizontal position gives the wavelength.")
+            if "Na" in selected_species:
+                st.caption("Sodium’s two selected lines are at 588.995 and 589.592 nm. They almost overlap on this scale.")
+
+        if "Intensity vs wavelength" in selected_representations:
+            st.plotly_chart(
+                intensity.figure_for_species(selected_species, spectrum_type),
+                width="stretch",
+                config=intensity.PLOTLY_CONFIG,
+            )
+            if spectrum_type == "Emission":
+                st.caption("The line and peak are centred at the same wavelength. Peak shape and height are simplified here so you can focus on position.")
+            else:
+                st.caption("The line and dip are centred at the same wavelength. Shape and depth are simplified here so you can focus on position.")
 
 
 

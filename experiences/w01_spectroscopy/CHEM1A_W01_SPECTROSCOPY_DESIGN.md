@@ -71,7 +71,7 @@ Do not initially explain the origin of line structure or place an energy-level/R
 
 **OBSERVATION:** Rendered inspection found a single-hydrogen default too visually sparse to make the barcode-comparison task obvious.
 
-**DECISION:** Explore spectra is a direct, reversible data/representation surface. Learners choose emission or absorption; visual spectrum, wavelength spectrum, or intensity versus wavelength; and the neutral species to inspect. All five species start selected, while “Spectra in view” remains secondary to the evidence and the sole prompt remains “What changes? What stays the same?”
+**DECISION:** Explore spectra is a direct, reversible data-exploration surface. Learners choose emission or absorption, the neutral atoms to inspect, and one or more visual spectrum, wavelength spectrum, or intensity-versus-wavelength representations. All five atoms and the visual spectrum start selected. The selected representations appear together in a fixed order for direct comparison.
 
 Visual spectra use wavelength colour as a phenomenon cue. Quantitative wavelength spectra use monochrome equal-geometry marks so the labelled horizontal coordinate carries wavelength. Absorption uses the same selected teaching-feature positions as emission and does not model relative strength.
 
