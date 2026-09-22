@@ -1,6 +1,6 @@
 import streamlit as st
 
-from chem1a_ui import apply_shared_visual_system, compare_prompt, stage_selector
+from chem1a_ui import apply_shared_visual_system, compare_prompt, representation_label, stage_selector
 from experiences.atomic_trends import view as atomic_trends
 from experiences.w01_spectroscopy import hydrogen, intensity, spectrum
 
@@ -71,18 +71,18 @@ def render_explore_evidence(
                     render_explore_representation(representation, selected_species, spectrum_type)
     else:
         for symbol in selected_species:
-            st.markdown(f"#### {spectrum.SPECIES_NAMES[symbol]}")
+            st.markdown(f"### {spectrum.SPECIES_NAMES[symbol]}")
             for representation in EXPLORE_REPRESENTATIONS:
                 if representation not in selected_representations:
                     continue
                 if representation == "Wavelength spectrum":
-                    st.markdown("##### Line positions")
+                    representation_label("Line positions")
                     st.markdown(
                         spectrum.render_quantitative_line_positions_svg([symbol], show_identity=False),
                         unsafe_allow_html=True,
                     )
                     continue
-                st.markdown(f"##### {representation}")
+                representation_label(representation)
                 for spectrum_type in EXPLORE_SPECTRUM_TYPES:
                     if spectrum_type in selected_spectrum_types:
                         if len(selected_spectrum_types) > 1:

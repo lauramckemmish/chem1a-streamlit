@@ -113,7 +113,7 @@ def figure_for_species(species: list[str], spectrum_type: str, *, show_species_l
         col=1,
     )
     figure.update_layout(
-        height=max(170, 130 * len(rows)),
+        height=max(145, 130 * len(rows)),
         dragmode="zoom",
         hovermode="closest",
         template="plotly_white",

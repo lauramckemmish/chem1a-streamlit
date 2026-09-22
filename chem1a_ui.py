@@ -43,6 +43,13 @@ def apply_shared_visual_system() -> None:
             letter-spacing: 0.01em;
             margin: 0.05rem 0 0.25rem;
         }}
+        .chem1a-representation-label {{
+            color: #17212b;
+            font-size: 0.9rem;
+            font-weight: 650;
+            letter-spacing: 0.01em;
+            margin: 0.45rem 0 0.15rem;
+        }}
         .st-key-chem1a_compare_prompt, .st-key-chem1a_absorption_prompt, .st-key-chem1a_absorption_question {{
             background: #f7f5fb;
             border-left: 4px solid var(--chem1a-purple);
@@ -177,6 +184,11 @@ def compare_prompt(text: str, *, key: str = "chem1a_compare_prompt") -> None:
     with st.container(key=key):
         st.markdown('<p class="chem1a-prompt-label">Compare</p>', unsafe_allow_html=True)
         st.markdown(f'<p class="chem1a-prompt-text">{text}</p>', unsafe_allow_html=True)
+
+
+def representation_label(text: str) -> None:
+    """Render a quiet local label for parallel evidence representations."""
+    st.markdown(f'<p class="chem1a-representation-label">{text}</p>', unsafe_allow_html=True)
 
 
 def stage_selector(labels: list[str], *, key: str, default_index: int = 0) -> str:

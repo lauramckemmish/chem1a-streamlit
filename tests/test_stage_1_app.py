@@ -151,7 +151,7 @@ class StageOneAppTests(unittest.TestCase):
         self.explore_control("Arrange by").set_value("Atom").run()
         visual = next(block.value for block in self.app.markdown if "Selected atomic visual emission spectra" in block.value)
         self.assertNotIn(">Hydrogen</text>", visual)
-        self.assertTrue(any("#### Hydrogen" in block.value for block in self.app.markdown))
+        self.assertTrue(any("### Hydrogen" in block.value for block in self.app.markdown))
 
     def test_no_selected_atom_has_a_neutral_prompt(self) -> None:
         for label in ("Hydrogen", "Helium", "Sodium", "Neon", "Mercury"):

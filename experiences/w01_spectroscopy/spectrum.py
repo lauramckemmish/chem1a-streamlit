@@ -161,6 +161,14 @@ def render_quantitative_line_positions_svg(species: Iterable[str], *, show_ident
     rows = features_for_species(species)
     row_height = 50
     top_margin = 8
+    plot_left = QUANTITATIVE_PLOT_LEFT if show_identity else PLOT_LEFT
+    plot_right = QUANTITATIVE_PLOT_RIGHT
+
+    def compact_x(wavelength_nm: float) -> float:
+        return plot_left + (wavelength_nm - WAVELENGTH_MIN_NM) * (plot_right - plot_left) / (
+            WAVELENGTH_MAX_NM - WAVELENGTH_MIN_NM
+        )
+
     axis_baseline = top_margin + row_height * len(rows) - 9
     height = axis_baseline + 42
     svg_rows: list[str] = []
@@ -169,8 +177,8 @@ def render_quantitative_line_positions_svg(species: Iterable[str], *, show_ident
         baseline = top + 34
         values = ", ".join(f"{float(feature['wavelength_nm']):.3f}" for feature in features)
         lines = "".join(
-            f'<line x1="{quantitative_wavelength_x(float(feature["wavelength_nm"])):.2f}" y1="{top + 4}" '
-            f'x2="{quantitative_wavelength_x(float(feature["wavelength_nm"])):.2f}" y2="{baseline}" '
+            f'<line x1="{compact_x(float(feature["wavelength_nm"])):.2f}" y1="{top + 4}" '
+            f'x2="{compact_x(float(feature["wavelength_nm"])):.2f}" y2="{baseline}" '
             'stroke="#334155" class="spectral-line" />'
             for feature in features
         )
@@ -182,14 +190,14 @@ def render_quantitative_line_positions_svg(species: Iterable[str], *, show_ident
         svg_rows.append(
             f'<g aria-label="{escape(SPECIES_NAMES[symbol])}: {values} nm">'
             f'{identity}'
-            f'<line x1="{QUANTITATIVE_PLOT_LEFT}" y1="{baseline}" '
-            f'x2="{QUANTITATIVE_PLOT_RIGHT}" y2="{baseline}" class="row-axis" />'
+            f'<line x1="{plot_left}" y1="{baseline}" '
+            f'x2="{plot_right}" y2="{baseline}" class="row-axis" />'
             f'{lines}</g>'
         )
     ticks = "".join(
-        f'<line x1="{quantitative_wavelength_x(tick):.2f}" y1="{axis_baseline}" '
-        f'x2="{quantitative_wavelength_x(tick):.2f}" y2="{axis_baseline + 7}" class="tick" />'
-        f'<text x="{quantitative_wavelength_x(tick):.2f}" y="{axis_baseline + 25}" class="tick-label">{tick}</text>'
+        f'<line x1="{compact_x(tick):.2f}" y1="{axis_baseline}" '
+        f'x2="{compact_x(tick):.2f}" y2="{axis_baseline + 7}" class="tick" />'
+        f'<text x="{compact_x(tick):.2f}" y="{axis_baseline + 25}" class="tick-label">{tick}</text>'
         for tick in range(400, 781, 100)
     )
     return f'''<style>
@@ -204,7 +212,7 @@ def render_quantitative_line_positions_svg(species: Iterable[str], *, show_ident
 <title>Selected atomic line positions on a shared wavelength scale</title>
 <desc>Each compact row uses the same wavelength mapping. Monochrome line marks have uniform height and width, so they show position only.</desc>
 {''.join(svg_rows)}
-<line x1="{QUANTITATIVE_PLOT_LEFT}" y1="{axis_baseline}" x2="{QUANTITATIVE_PLOT_RIGHT}" y2="{axis_baseline}" class="axis" />
+<line x1="{plot_left}" y1="{axis_baseline}" x2="{plot_right}" y2="{axis_baseline}" class="axis" />
 {ticks}
 </svg>'''
 
