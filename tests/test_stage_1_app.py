@@ -64,7 +64,7 @@ class StageOneAppTests(unittest.TestCase):
         )
         page_copy = [block.value for block in self.app.markdown]
         self.assertFalse(any("Compare the patterns in these atomic spectra." in block for block in page_copy))
-        self.assertIn(
+        self.assertNotIn(
             "Colour is a wavelength cue. The pattern of line positions is what to compare.",
             [caption.value for caption in self.app.caption],
         )

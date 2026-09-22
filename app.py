@@ -42,7 +42,6 @@ def render_explore_spectra() -> None:
     if selected_species:
         if spectrum_type == "Emission" and representation == "Visual spectrum":
             st.markdown(spectrum.render_visual_comparison_svg(selected_species), unsafe_allow_html=True)
-            st.caption("Colour is a wavelength cue. The pattern of line positions is what to compare.")
         elif spectrum_type == "Absorption" and representation == "Visual spectrum":
             st.markdown(spectrum.render_visual_absorption_comparison_svg(selected_species), unsafe_allow_html=True)
         elif representation == "Wavelength spectrum":

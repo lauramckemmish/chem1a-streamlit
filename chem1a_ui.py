@@ -28,6 +28,7 @@ def apply_shared_visual_system() -> None:
         :root {{
             --chem1a-yellow: {UNSW_COLOURS["yellow"]};
             --chem1a-black: {UNSW_COLOURS["black"]};
+            --chem1a-indigo: {UNSW_COLOURS["indigo"]};
             --chem1a-purple: {UNSW_COLOURS["purple"]};
         }}
         .st-key-chem1a_stage_controls {{
@@ -92,6 +93,30 @@ def apply_shared_visual_system() -> None:
         }}
         [role="tab"][aria-selected="true"] p {{
             font-weight: 650 !important;
+        }}
+        [data-testid="stSegmentedControl"] button {{
+            background: #ffffff !important;
+            border-color: #cbd5e1 !important;
+            color: #17212b !important;
+            font-weight: 500;
+        }}
+        [data-testid="stSegmentedControl"] button[aria-pressed="true"],
+        [data-testid="stSegmentedControl"] button[aria-selected="true"],
+        [data-testid="stSegmentedControl"] button[data-selected="true"] {{
+            background: #ffffff !important;
+            border-color: #17212b !important;
+            color: #17212b !important;
+            font-weight: 650;
+        }}
+        [data-testid="stSegmentedControl"] button:hover {{
+            background: #f8fafc !important;
+            border-color: #64748b !important;
+            color: #17212b !important;
+        }}
+        [data-testid="stSegmentedControl"] button:focus-visible {{
+            outline: 2px solid var(--chem1a-indigo) !important;
+            outline-offset: 2px;
+            box-shadow: none !important;
         }}
         [class*="st-key-chem1a_hard_reveal_"] button {{
             background: transparent !important;
