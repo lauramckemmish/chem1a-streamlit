@@ -57,7 +57,8 @@ class StageOneAppTests(unittest.TestCase):
         for species in ("Hydrogen", "Helium", "Sodium", "Neon", "Mercury"):
             self.assertIn(species, rendered)
         self.assertNotIn("tick-label", rendered)
-        self.assertEqual("Emission", self.explore_control("Spectrum type").value)
+        self.assertTrue(self.checkbox("Emission").value)
+        self.assertFalse(self.checkbox("Absorption").value)
         self.assertTrue(self.checkbox("Visual spectrum").value)
         self.assertFalse(self.checkbox("Wavelength spectrum").value)
         self.assertFalse(self.checkbox("Intensity vs wavelength").value)
@@ -72,6 +73,7 @@ class StageOneAppTests(unittest.TestCase):
             [caption.value for caption in self.app.caption],
         )
         self.assertTrue(any("Atoms in view" in block for block in page_copy))
+        self.assertEqual("Representation", self.explore_control("Arrange by").value)
         self.assertNotIn("Show wavelength scale", [control.label for control in self.app.button])
         self.assertNotIn("Reveal absorption spectra", [control.label for control in self.app.button])
 
@@ -91,16 +93,13 @@ class StageOneAppTests(unittest.TestCase):
         self.assertIn('stroke="#334155"', rendered)
         self.assertNotIn('stroke="rgb(', rendered)
         self.assertTrue(any("Selected atomic visual emission spectra" in block.value for block in self.app.markdown))
-        self.assertIn(
-            "Horizontal position gives the wavelength.",
-            [caption.value for caption in self.app.caption],
-        )
-        self.assertIn(
-            "Sodium’s two selected lines are at 588.995 and 589.592 nm. They almost overlap on this scale.",
-            [caption.value for caption in self.app.caption],
-        )
+        captions = [caption.value for caption in self.app.caption]
+        self.assertNotIn("Horizontal position gives the wavelength.", captions)
+        self.assertFalse(any("Sodium’s two selected lines" in caption for caption in captions))
+
     def test_absorption_visual_and_wavelength_representations_are_reversible(self) -> None:
-        self.explore_control("Spectrum type").set_value("Absorption").run()
+        self.checkbox("Emission").set_value(False).run()
+        self.checkbox("Absorption").set_value(True).run()
         visual = next(block.value for block in self.app.markdown if "Selected atomic visual absorption spectra" in block.value)
         self.assertIn("visible-spectrum-band", visual)
         self.assertNotIn("tick-label", visual)
@@ -108,7 +107,8 @@ class StageOneAppTests(unittest.TestCase):
         quantitative = next(block.value for block in self.app.markdown if "Selected atomic absorption-line positions" in block.value)
         self.assertIn("tick-label", quantitative)
         self.assertIn('stroke="#334155"', quantitative)
-        self.explore_control("Spectrum type").set_value("Emission").run()
+        self.checkbox("Emission").set_value(True).run()
+        self.checkbox("Absorption").set_value(False).run()
         self.checkbox("Wavelength spectrum").set_value(False).run()
         self.assertTrue(any("Selected atomic visual emission spectra" in block.value for block in self.app.markdown))
 
@@ -117,21 +117,27 @@ class StageOneAppTests(unittest.TestCase):
         self.checkbox("Neon").set_value(False).run()
         rendered = next(block.value for block in self.app.markdown if "Selected atomic emission-line positions" in block.value)
         self.assertNotIn("Neon", rendered)
-        self.explore_control("Spectrum type").set_value("Absorption").run()
+        self.checkbox("Emission").set_value(False).run()
+        self.checkbox("Absorption").set_value(True).run()
         rendered = next(block.value for block in self.app.markdown if "Selected atomic absorption-line positions" in block.value)
         self.assertNotIn("Neon", rendered)
 
     def test_intensity_representation_is_available_for_emission_and_absorption(self) -> None:
         self.checkbox("Intensity vs wavelength").set_value(True).run()
-        self.assertIn(
-            "The line and peak are centred at the same wavelength. Peak shape and height are simplified here so you can focus on position.",
-            [caption.value for caption in self.app.caption],
-        )
-        self.explore_control("Spectrum type").set_value("Absorption").run()
-        self.assertIn(
-            "The line and dip are centred at the same wavelength. Shape and depth are simplified here so you can focus on position.",
-            [caption.value for caption in self.app.caption],
-        )
+        qualification = "Intensity curves are illustrative; line positions come from the reference data."
+        self.assertEqual([qualification], [caption.value for caption in self.app.caption])
+        self.checkbox("Absorption").set_value(True).run()
+        self.assertEqual([qualification], [caption.value for caption in self.app.caption])
+        self.assertFalse(any("The line and peak are centred" in caption.value for caption in self.app.caption))
+        self.assertFalse(any("The line and dip are centred" in caption.value for caption in self.app.caption))
+
+    def test_arrangement_changes_only_evidence_grouping(self) -> None:
+        self.checkbox("Wavelength spectrum").set_value(True).run()
+        self.checkbox("Absorption").set_value(True).run()
+        self.explore_control("Arrange by").set_value("Atom").run()
+        self.assertTrue(all(self.checkbox(name).value for name in ("Emission", "Absorption", "Visual spectrum", "Wavelength spectrum")))
+        self.assertTrue(any("Hydrogen" in heading.value for heading in self.app.markdown))
+        self.assertEqual(20, len([block for block in self.app.markdown if "Selected atomic" in block.value]))
 
     def test_no_selected_atom_has_a_neutral_prompt(self) -> None:
         for label in ("Hydrogen", "Helium", "Sodium", "Neon", "Mercury"):
@@ -141,6 +147,10 @@ class StageOneAppTests(unittest.TestCase):
     def test_no_selected_representation_has_a_neutral_prompt(self) -> None:
         self.checkbox("Visual spectrum").set_value(False).run()
         self.assertEqual(["Choose at least one representation to display."], [notice.value for notice in self.app.info])
+
+    def test_no_selected_spectrum_type_has_a_neutral_prompt(self) -> None:
+        self.checkbox("Emission").set_value(False).run()
+        self.assertEqual(["Choose at least one spectrum type to display."], [notice.value for notice in self.app.info])
 
     def hydrogen_input(self, label: str):
         return next(control for control in self.app.number_input if control.label == label)

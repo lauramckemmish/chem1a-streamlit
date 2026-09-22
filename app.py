@@ -6,6 +6,8 @@ from experiences.w01_spectroscopy import hydrogen, intensity, spectrum
 
 
 EXPLORE_DEFAULT_SELECTED_SPECIES = spectrum.SPECIES_ORDER
+EXPLORE_SPECTRUM_TYPES = ("Emission", "Absorption")
+EXPLORE_REPRESENTATIONS = ("Visual spectrum", "Wavelength spectrum", "Intensity vs wavelength")
 
 
 def remember_explore_control(control_key: str) -> None:
@@ -23,13 +25,76 @@ def hydrogen_evidence_revealed() -> bool:
     return bool(st.session_state.setdefault("hydrogen_evidence_revealed", False))
 
 
+def render_explore_representation(
+    representation: str, selected_species: list[str], spectrum_type: str
+) -> None:
+    """Render one existing representation for one selected spectrum type."""
+    if representation == "Visual spectrum":
+        visual = (
+            spectrum.render_visual_comparison_svg
+            if spectrum_type == "Emission"
+            else spectrum.render_visual_absorption_comparison_svg
+        )
+        st.markdown(visual(selected_species), unsafe_allow_html=True)
+    elif representation == "Wavelength spectrum":
+        quantitative = (
+            spectrum.render_quantitative_emission_svg
+            if spectrum_type == "Emission"
+            else spectrum.render_quantitative_absorption_svg
+        )
+        st.markdown(quantitative(selected_species), unsafe_allow_html=True)
+    else:
+        st.plotly_chart(
+            intensity.figure_for_species(selected_species, spectrum_type),
+            width="stretch",
+            config=intensity.PLOTLY_CONFIG,
+        )
+
+
+def render_explore_evidence(
+    selected_species: list[str], selected_spectrum_types: set[str], selected_representations: set[str], arrangement: str
+) -> None:
+    """Compose the established renderers by the learner's chosen comparison dimension."""
+    if arrangement == "Representation":
+        for representation in EXPLORE_REPRESENTATIONS:
+            if representation not in selected_representations:
+                continue
+            st.markdown(f"#### {representation}")
+            for spectrum_type in EXPLORE_SPECTRUM_TYPES:
+                if spectrum_type in selected_spectrum_types:
+                    if len(selected_spectrum_types) > 1:
+                        st.markdown(f"**{spectrum_type}**")
+                    render_explore_representation(representation, selected_species, spectrum_type)
+    else:
+        for symbol in selected_species:
+            st.markdown(f"#### {spectrum.SPECIES_NAMES[symbol]}")
+            for representation in EXPLORE_REPRESENTATIONS:
+                if representation not in selected_representations:
+                    continue
+                st.markdown(f"##### {representation}")
+                for spectrum_type in EXPLORE_SPECTRUM_TYPES:
+                    if spectrum_type in selected_spectrum_types:
+                        if len(selected_spectrum_types) > 1:
+                            st.markdown(f"**{spectrum_type}**")
+                        render_explore_representation(representation, [symbol], spectrum_type)
+
+
 def render_explore_spectra() -> None:
     """Render the established first spectroscopy phenomenon surface."""
     st.header("Explore atomic spectra")
     with st.container(key="chem1a_stage_controls"):
-        spectrum_type = st.segmented_control(
-            "Spectrum type", ["Emission", "Absorption"], default="Emission", key="explore_spectrum_type"
-        )
+        st.markdown('<p class="chem1a-control-label">Spectrum type</p>', unsafe_allow_html=True)
+        selected_spectrum_types = {
+            spectrum_type
+            for spectrum_type in EXPLORE_SPECTRUM_TYPES
+            if st.checkbox(
+                spectrum_type,
+                value=explore_control_value(f"spectrum_type_{spectrum_type}", spectrum_type == "Emission"),
+                key=f"spectrum_type_{spectrum_type}",
+                on_change=remember_explore_control,
+                args=(f"spectrum_type_{spectrum_type}",),
+            )
+        }
         st.markdown('<p class="chem1a-control-label">Atoms in view</p>', unsafe_allow_html=True)
         atom_columns = (*st.columns(3), *st.columns(3))
         for column, symbol in zip(atom_columns, spectrum.SPECIES_ORDER):
@@ -44,7 +109,7 @@ def render_explore_spectra() -> None:
         st.markdown('<p class="chem1a-control-label">Representations</p>', unsafe_allow_html=True)
         selected_representations = {
             representation
-            for representation in ("Visual spectrum", "Wavelength spectrum", "Intensity vs wavelength")
+            for representation in EXPLORE_REPRESENTATIONS
             if st.checkbox(
                 representation,
                 value=explore_control_value(
@@ -55,6 +120,9 @@ def render_explore_spectra() -> None:
                 args=(f"representation_{representation}",),
             )
         }
+        arrangement = st.segmented_control(
+            "Arrange by", ["Atom", "Representation"], default="Representation", key="explore_arrangement"
+        )
 
     selected_species = [
         symbol
@@ -62,37 +130,16 @@ def render_explore_spectra() -> None:
         if explore_control_value(f"atom_{symbol}", symbol in EXPLORE_DEFAULT_SELECTED_SPECIES)
     ]
 
-    if not selected_species:
+    if not selected_spectrum_types:
+        st.info("Choose at least one spectrum type to display.")
+    elif not selected_species:
         st.info("Choose at least one spectrum to keep in view.")
     elif not selected_representations:
         st.info("Choose at least one representation to display.")
     else:
-        if "Visual spectrum" in selected_representations and spectrum_type == "Emission":
-            st.markdown(spectrum.render_visual_comparison_svg(selected_species), unsafe_allow_html=True)
-        elif "Visual spectrum" in selected_representations:
-            st.markdown(spectrum.render_visual_absorption_comparison_svg(selected_species), unsafe_allow_html=True)
-
-        if "Wavelength spectrum" in selected_representations:
-            quantitative = (
-                spectrum.render_quantitative_emission_svg
-                if spectrum_type == "Emission"
-                else spectrum.render_quantitative_absorption_svg
-            )
-            st.markdown(quantitative(selected_species), unsafe_allow_html=True)
-            st.caption("Horizontal position gives the wavelength.")
-            if "Na" in selected_species:
-                st.caption("Sodium’s two selected lines are at 588.995 and 589.592 nm. They almost overlap on this scale.")
-
+        render_explore_evidence(selected_species, selected_spectrum_types, selected_representations, arrangement)
         if "Intensity vs wavelength" in selected_representations:
-            st.plotly_chart(
-                intensity.figure_for_species(selected_species, spectrum_type),
-                width="stretch",
-                config=intensity.PLOTLY_CONFIG,
-            )
-            if spectrum_type == "Emission":
-                st.caption("The line and peak are centred at the same wavelength. Peak shape and height are simplified here so you can focus on position.")
-            else:
-                st.caption("The line and dip are centred at the same wavelength. Shape and depth are simplified here so you can focus on position.")
+            st.caption("Intensity curves are illustrative; line positions come from the reference data.")
 
 
 

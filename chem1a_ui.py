@@ -94,26 +94,36 @@ def apply_shared_visual_system() -> None:
         [role="tab"][aria-selected="true"] p {{
             font-weight: 650 !important;
         }}
-        [data-testid="stSegmentedControl"] button {{
+        [data-testid="stSegmentedControl"] button,
+        [data-testid="stSegmentedControl"] label,
+        [data-testid="stSegmentedControl"] [role="radio"] {{
             background: #ffffff !important;
-            border-color: #cbd5e1 !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: none !important;
             color: #17212b !important;
             font-weight: 500;
         }}
         [data-testid="stSegmentedControl"] button[aria-pressed="true"],
         [data-testid="stSegmentedControl"] button[aria-selected="true"],
-        [data-testid="stSegmentedControl"] button[data-selected="true"] {{
+        [data-testid="stSegmentedControl"] button[data-selected="true"],
+        [data-testid="stSegmentedControl"] label:has(input:checked),
+        [data-testid="stSegmentedControl"] [role="radio"][aria-checked="true"] {{
             background: #ffffff !important;
-            border-color: #17212b !important;
+            border: 1px solid #17212b !important;
+            box-shadow: none !important;
             color: #17212b !important;
             font-weight: 650;
         }}
-        [data-testid="stSegmentedControl"] button:hover {{
+        [data-testid="stSegmentedControl"] button:hover,
+        [data-testid="stSegmentedControl"] label:hover,
+        [data-testid="stSegmentedControl"] [role="radio"]:hover {{
             background: #f8fafc !important;
-            border-color: #64748b !important;
+            border: 1px solid #64748b !important;
             color: #17212b !important;
         }}
-        [data-testid="stSegmentedControl"] button:focus-visible {{
+        [data-testid="stSegmentedControl"] button:focus-visible,
+        [data-testid="stSegmentedControl"] label:has(input:focus-visible),
+        [data-testid="stSegmentedControl"] [role="radio"]:focus-visible {{
             outline: 2px solid var(--chem1a-indigo) !important;
             outline-offset: 2px;
             box-shadow: none !important;
