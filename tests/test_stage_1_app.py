@@ -21,6 +21,9 @@ class StageOneAppTests(unittest.TestCase):
     def button(self, label: str):
         return next(control for control in self.app.button if control.label == label)
 
+    def explore_control(self, label: str):
+        return next(control for control in self.app.segmented_control if control.label == label)
+
     def test_tabs_replace_surface_configuration_and_default_to_all_five_atoms(self) -> None:
         self.assertEqual(
             ["Spectroscopy", "Periodic trends"],
@@ -55,7 +58,8 @@ class StageOneAppTests(unittest.TestCase):
         for species in ("Hydrogen", "Helium", "Sodium", "Neon", "Mercury"):
             self.assertIn(species, rendered)
         self.assertNotIn("tick-label", rendered)
-        self.assertIn("Show wavelength scale", [control.label for control in self.app.button])
+        self.assertEqual("Emission", self.explore_control("Spectrum type").value)
+        self.assertEqual("Visual spectrum", self.explore_control("Representation").value)
         page_copy = [block.value for block in self.app.markdown]
         self.assertFalse(any("Compare the patterns in these atomic spectra." in block for block in page_copy))
         self.assertIn(
@@ -64,7 +68,8 @@ class StageOneAppTests(unittest.TestCase):
         )
         self.assertTrue(any("What changes? What stays the same?" in block for block in page_copy))
         self.assertTrue(any("Spectra in view" in block for block in page_copy))
-        self.assertTrue(any("Now add a wavelength scale to the same patterns." in block for block in page_copy))
+        self.assertNotIn("Show wavelength scale", [control.label for control in self.app.button])
+        self.assertNotIn("Reveal absorption spectra", [control.label for control in self.app.button])
 
     def test_focus_controls_remove_only_the_unchecked_visual_spectrum(self) -> None:
         self.checkbox("Helium").set_value(False).run()
@@ -74,73 +79,43 @@ class StageOneAppTests(unittest.TestCase):
         self.assertIn("656.285", rendered)
         self.assertIn("588.995", rendered)
 
-    def test_wavelength_reveal_transforms_to_quantitative_spectrum_and_persists(self) -> None:
-        self.button("Show wavelength scale").click().run()
+    def test_wavelength_representation_is_immediate_and_monochrome(self) -> None:
+        self.explore_control("Representation").set_value("Wavelength spectrum").run()
         rendered = next(block.value for block in self.app.markdown if "Selected atomic emission-line positions" in block.value)
         self.assertIn("380 to 780 nanometre scale", rendered)
         self.assertIn("tick-label", rendered)
+        self.assertIn('stroke="#334155"', rendered)
+        self.assertNotIn('stroke="rgb(', rendered)
         self.assertFalse(any("Selected atomic visual emission spectra" in block.value for block in self.app.markdown))
-        self.assertIn("Reveal absorption spectra", [control.label for control in self.app.button])
-        page_copy = [block.value for block in self.app.markdown]
         self.assertIn(
-            "Horizontal position gives the wavelength. Colour is a visual cue.",
+            "Horizontal position gives the wavelength.",
             [caption.value for caption in self.app.caption],
         )
         self.assertIn(
             "Sodium’s two selected lines are at 588.995 and 589.592 nm. They almost overlap on this scale.",
             [caption.value for caption in self.app.caption],
         )
-        self.assertTrue(any("Now compare the same atoms in absorption." in block for block in page_copy))
-        self.app.run()
-        self.assertTrue(any("Selected atomic emission-line positions" in block.value for block in self.app.markdown))
+    def test_absorption_visual_and_wavelength_representations_are_reversible(self) -> None:
+        self.explore_control("Spectrum type").set_value("Absorption").run()
+        visual = next(block.value for block in self.app.markdown if "Selected atomic visual absorption spectra" in block.value)
+        self.assertIn("visible-spectrum-band", visual)
+        self.assertNotIn("tick-label", visual)
+        self.explore_control("Representation").set_value("Wavelength spectrum").run()
+        quantitative = next(block.value for block in self.app.markdown if "Selected atomic absorption-line positions" in block.value)
+        self.assertIn("tick-label", quantitative)
+        self.assertIn('stroke="#334155"', quantitative)
+        self.explore_control("Spectrum type").set_value("Emission").run()
+        self.explore_control("Representation").set_value("Visual spectrum").run()
+        self.assertTrue(any("Selected atomic visual emission spectra" in block.value for block in self.app.markdown))
 
-    def test_absorption_is_not_available_until_wavelength_reveal_then_persists(self) -> None:
-        self.assertFalse(any("Selected atomic absorption-line positions" in block.value for block in self.app.markdown))
-        self.assertNotIn("Reveal absorption spectra", [control.label for control in self.app.button])
-        self.button("Show wavelength scale").click().run()
-        self.button("Reveal absorption spectra").click().run()
-        rendered = [block.value for block in self.app.markdown if "Selected atomic absorption-line positions" in block.value]
-        self.assertEqual(5, len(rendered))
-        self.assertTrue(any("Hydrogen absorption" in block for block in rendered))
-        self.app.run()
-        self.assertTrue(any("Selected atomic absorption-line positions" in block.value for block in self.app.markdown))
-
-    def test_absorption_pairs_each_selected_atom_with_its_own_emission(self) -> None:
-        self.button("Show wavelength scale").click().run()
-        self.button("Reveal absorption spectra").click().run()
-        rendered = [block.value for block in self.app.markdown]
-        self.assertTrue(any('class="chem1a-pair-atom">Hydrogen' in block for block in rendered))
-        self.assertTrue(any('class="chem1a-pair-atom">Sodium' in block for block in rendered))
-        self.assertGreaterEqual(sum('chem1a-pair-label">Emission' in block for block in rendered), 5)
-        self.assertGreaterEqual(sum('chem1a-pair-label">Absorption' in block for block in rendered), 5)
-        sodium_absorption = [block for block in rendered if "Sodium absorption" in block]
-        self.assertEqual(1, len(sodium_absorption))
-        self.assertIn("588.995", sodium_absorption[0])
-        self.assertIn("589.592", sodium_absorption[0])
-        self.assertFalse(any("What do you notice about where the absorption and emission lines appear?" in block for block in rendered))
-        self.assertTrue(any("Emission and absorption lines occur at the same wavelengths. Why?" in block for block in rendered))
-
-    def test_added_atoms_use_the_current_quantitative_absorption_state(self) -> None:
-        self.checkbox("Sodium").set_value(False).run()
-        self.button("Show wavelength scale").click().run()
-        self.button("Reveal absorption spectra").click().run()
-        self.checkbox("Sodium").set_value(True).run()
-        rendered = [block.value for block in self.app.markdown]
-        self.assertTrue(any("Sodium: 588.995, 589.592 nm" in block for block in rendered))
-        self.assertTrue(any("Sodium absorption" in block for block in rendered))
-
-    def test_focus_controls_do_not_reset_the_wavelength_reveal(self) -> None:
-        self.button("Show wavelength scale").click().run()
+    def test_species_controls_apply_to_reversible_explore_representations(self) -> None:
+        self.explore_control("Representation").set_value("Wavelength spectrum").run()
         self.checkbox("Neon").set_value(False).run()
-        self.assertTrue(any("Selected atomic emission-line positions" in block.value for block in self.app.markdown))
-        self.assertNotIn("Neon", next(block.value for block in self.app.markdown if "Selected atomic emission-line positions" in block.value))
-
-    def test_focus_controls_do_not_reset_the_absorption_reveal(self) -> None:
-        self.button("Show wavelength scale").click().run()
-        self.button("Reveal absorption spectra").click().run()
-        self.checkbox("Mercury").set_value(False).run()
-        self.assertTrue(any("Selected atomic absorption-line positions" in block.value for block in self.app.markdown))
-        self.assertFalse(any("Mercury absorption" in block.value for block in self.app.markdown))
+        rendered = next(block.value for block in self.app.markdown if "Selected atomic emission-line positions" in block.value)
+        self.assertNotIn("Neon", rendered)
+        self.explore_control("Spectrum type").set_value("Absorption").run()
+        rendered = next(block.value for block in self.app.markdown if "Selected atomic absorption-line positions" in block.value)
+        self.assertNotIn("Neon", rendered)
 
     def test_no_selected_atom_has_a_neutral_prompt(self) -> None:
         for label in ("Hydrogen", "Helium", "Sodium", "Neon", "Mercury"):

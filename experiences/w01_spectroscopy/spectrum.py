@@ -80,7 +80,8 @@ def combined_absorption_features_for_species(species: Iterable[str]) -> list[dic
 
 
 def _render_rows_svg(
-    rows: dict[str, list[dict[str, str]]], names: dict[str, str], *, show_identity: bool = True
+    rows: dict[str, list[dict[str, str]]], names: dict[str, str], *, show_identity: bool = True,
+    line_colour: str | None = None, spectrum_type: str = "emission"
 ) -> str:
     """Render equal-geometry quantitative rows on the shared wavelength axis."""
     row_height = 96 if show_identity else 78
@@ -99,7 +100,7 @@ def _render_rows_svg(
         lines = "".join(
             f'<line x1="{wavelength_x(float(feature["wavelength_nm"])):.2f}" y1="{top + 5}" '
             f'x2="{wavelength_x(float(feature["wavelength_nm"])):.2f}" y2="{baseline}" '
-            f'stroke="{wavelength_to_colour(float(feature["wavelength_nm"]))}" class="spectral-line" />'
+            f'stroke="{line_colour or wavelength_to_colour(float(feature["wavelength_nm"]))}" class="spectral-line" />'
             for feature in features
         )
         identity = (
@@ -121,8 +122,8 @@ def _render_rows_svg(
 .feature-count {{ fill: #475569; font-size: 13px; }}
 .spectral-line {{ stroke-width: 1.1; vector-effect: non-scaling-stroke; stroke-linecap: square; }}
 </style>
-<svg class="spectrum-svg" viewBox="0 0 1200 {height}" role="img" aria-label="Selected atomic emission-line positions on the shared 380 to 780 nanometre scale">
-<title>Selected atomic spectral features on a shared wavelength scale</title>
+<svg class="spectrum-svg" viewBox="0 0 1200 {height}" role="img" aria-label="Selected atomic {spectrum_type}-line positions on the shared 380 to 780 nanometre scale">
+<title>Selected atomic {spectrum_type} features on a shared wavelength scale</title>
 <desc>Each row uses the same labelled wavelength axis. Line marks have uniform height and width, so they show position only.</desc>
 {''.join(svg_rows)}
 </svg>'''
@@ -132,6 +133,18 @@ def render_comparison_svg(species: Iterable[str], *, show_identity: bool = True)
     """Render separate selected-atom quantitative rows on the shared Stage 1 axis."""
     rows = features_for_species(species)
     return _render_rows_svg(rows, SPECIES_NAMES, show_identity=show_identity)
+
+
+def render_quantitative_emission_svg(species: Iterable[str]) -> str:
+    """Render monochrome emission positions so the labelled axis carries wavelength."""
+    return _render_rows_svg(features_for_species(species), SPECIES_NAMES, line_colour="#334155")
+
+
+def render_quantitative_absorption_svg(species: Iterable[str]) -> str:
+    """Render monochrome absorption positions without inventing depth or intensity."""
+    return _render_rows_svg(
+        absorption_features_for_species(species), SPECIES_NAMES, line_colour="#334155", spectrum_type="absorption"
+    )
 
 
 def _render_visual_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[str, str]) -> str:
@@ -253,6 +266,44 @@ def render_absorption_comparison_svg(species: Iterable[str], *, show_identity: b
     return _render_absorption_rows_svg(
         absorption_features_for_species(species), SPECIES_NAMES, show_identity=show_identity
     )
+
+
+def render_visual_absorption_comparison_svg(species: Iterable[str]) -> str:
+    """Render the continuous visible band and dark positions without a wavelength axis."""
+    rows = absorption_features_for_species(species)
+    row_height = 88
+    height = 20 + row_height * len(rows)
+    gradient_stops = "".join(
+        f'<stop offset="{(wavelength - WAVELENGTH_MIN_NM) / (WAVELENGTH_MAX_NM - WAVELENGTH_MIN_NM) * 100:.2f}%" '
+        f'stop-color="{wavelength_to_colour(wavelength)}" />'
+        for wavelength in (WAVELENGTH_MIN_NM, 440.0, 490.0, 510.0, 580.0, 645.0, WAVELENGTH_MAX_NM)
+    )
+    svg_rows: list[str] = []
+    for index, (symbol, features) in enumerate(rows.items()):
+        top = 10 + index * row_height
+        values = ", ".join(f"{float(feature['wavelength_nm']):.3f}" for feature in features)
+        lines = "".join(
+            f'<line x1="{wavelength_x(float(feature["wavelength_nm"])):.2f}" y1="{top + 7}" '
+            f'x2="{wavelength_x(float(feature["wavelength_nm"])):.2f}" y2="{top + 59}" class="absorption-line" />'
+            for feature in features
+        )
+        svg_rows.append(
+            f'<g aria-label="{escape(SPECIES_NAMES[symbol])} absorption: dark lines at {values} nm">'
+            f'<text x="18" y="{top + 35}" class="visual-species">{escape(SPECIES_NAMES[symbol])}</text>'
+            f'<rect x="{PLOT_LEFT}" y="{top}" width="{PLOT_RIGHT - PLOT_LEFT}" height="66" fill="url(#visible-spectrum-band)" />'
+            f'{lines}</g>'
+        )
+    return f'''<style>
+.visual-absorption-svg {{ display: block; width: 100%; height: auto; background: #ffffff; font-family: "Source Sans Pro", Arial, sans-serif; color: #17212b; }}
+.visual-species {{ fill: #17212b; font-size: 19px; font-weight: 650; }}
+.absorption-line {{ stroke: #111827; stroke-width: 2.6; vector-effect: non-scaling-stroke; }}
+</style>
+<svg class="visual-absorption-svg" viewBox="0 0 1200 {height}" role="img" aria-label="Selected atomic visual absorption spectra">
+<title>Selected atomic visual absorption spectra</title>
+<desc>Each continuous illustrative visible-spectrum band has equal dark lines at selected positions. No wavelength axis is shown.</desc>
+<defs><linearGradient id="visible-spectrum-band" x1="0%" y1="0%" x2="100%" y2="0%">{gradient_stops}</linearGradient></defs>
+{''.join(svg_rows)}
+</svg>'''
 
 
 def render_combined_absorption_svg(species: Iterable[str]) -> str:

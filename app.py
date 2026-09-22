@@ -1,6 +1,6 @@
 import streamlit as st
 
-from chem1a_ui import apply_shared_visual_system, compare_prompt, hard_reveal, stage_selector
+from chem1a_ui import apply_shared_visual_system, compare_prompt, stage_selector
 from experiences.atomic_trends import view as atomic_trends
 from experiences.w01_spectroscopy import hydrogen, read_spectrum, spectrum
 
@@ -18,16 +18,6 @@ def explore_control_value(control_key: str, default: bool) -> bool:
     return bool(st.session_state.get(f"saved_{control_key}", default))
 
 
-def explore_reveal_state() -> tuple[bool, bool]:
-    """Return the valid global representation state for the Explore surface."""
-    wavelength_revealed = bool(st.session_state.setdefault("wavelength_scale", False))
-    absorption_revealed = bool(st.session_state.setdefault("absorption", False))
-    if absorption_revealed and not wavelength_revealed:
-        st.session_state["wavelength_scale"] = True
-        wavelength_revealed = True
-    return wavelength_revealed, absorption_revealed
-
-
 def hydrogen_evidence_revealed() -> bool:
     """Return the persistent prediction-first evidence state for Hydrogen."""
     return bool(st.session_state.setdefault("hydrogen_evidence_revealed", False))
@@ -36,6 +26,13 @@ def hydrogen_evidence_revealed() -> bool:
 def render_explore_spectra() -> None:
     """Render the established first spectroscopy phenomenon surface."""
     st.header("Explore atomic spectra")
+    spectrum_type = st.segmented_control(
+        "Spectrum type", ["Emission", "Absorption"], default="Emission", key="explore_spectrum_type"
+    )
+    representation = st.segmented_control(
+        "Representation", ["Visual spectrum", "Wavelength spectrum"],
+        default="Visual spectrum", key="explore_representation",
+    )
     selected_species = [
         symbol
         for symbol in spectrum.SPECIES_ORDER
@@ -43,15 +40,21 @@ def render_explore_spectra() -> None:
     ]
 
     if selected_species:
-        wavelength_revealed, absorption_revealed = explore_reveal_state()
-        if wavelength_revealed:
-            st.markdown(spectrum.render_comparison_svg(selected_species), unsafe_allow_html=True)
-            st.caption("Horizontal position gives the wavelength. Colour is a visual cue.")
-            if "Na" in selected_species:
-                st.caption("Sodium’s two selected lines are at 588.995 and 589.592 nm. They almost overlap on this scale.")
-        else:
+        if spectrum_type == "Emission" and representation == "Visual spectrum":
             st.markdown(spectrum.render_visual_comparison_svg(selected_species), unsafe_allow_html=True)
             st.caption("Colour is a wavelength cue. The pattern of line positions is what to compare.")
+        elif spectrum_type == "Absorption" and representation == "Visual spectrum":
+            st.markdown(spectrum.render_visual_absorption_comparison_svg(selected_species), unsafe_allow_html=True)
+        else:
+            quantitative = (
+                spectrum.render_quantitative_emission_svg
+                if spectrum_type == "Emission"
+                else spectrum.render_quantitative_absorption_svg
+            )
+            st.markdown(quantitative(selected_species), unsafe_allow_html=True)
+            st.caption("Horizontal position gives the wavelength.")
+            if "Na" in selected_species:
+                st.caption("Sodium’s two selected lines are at 588.995 and 589.592 nm. They almost overlap on this scale.")
         compare_prompt("What changes? What stays the same?")
 
     else:
@@ -69,36 +72,6 @@ def render_explore_spectra() -> None:
                 args=(f"atom_{symbol}",),
             )
 
-    if selected_species:
-        if not wavelength_revealed:
-            hard_reveal(
-                "Now add a wavelength scale to the same patterns.",
-                key="wavelength_scale",
-                reveal_label="Show wavelength scale",
-            )
-        elif hard_reveal(
-            "Now compare the same atoms in absorption.",
-            key="absorption",
-            reveal_label="Reveal absorption spectra",
-        ):
-            st.caption("This simplified view compares line positions. Relative line strength is not represented.")
-            for symbol in selected_species:
-                with st.container(key=f"chem1a_absorption_pair_{symbol}"):
-                    st.markdown(
-                        f'<p class="chem1a-pair-atom">{spectrum.SPECIES_NAMES[symbol]}</p>',
-                        unsafe_allow_html=True,
-                    )
-                    st.markdown('<p class="chem1a-pair-label">Emission</p>', unsafe_allow_html=True)
-                    st.markdown(spectrum.render_comparison_svg([symbol], show_identity=False), unsafe_allow_html=True)
-                    st.markdown('<p class="chem1a-pair-label">Absorption</p>', unsafe_allow_html=True)
-                    st.markdown(
-                        spectrum.render_absorption_comparison_svg([symbol], show_identity=False),
-                        unsafe_allow_html=True,
-                    )
-            compare_prompt(
-                "Emission and absorption lines occur at the same wavelengths. Why?",
-                key="chem1a_absorption_question",
-            )
 
 
 def render_hydrogen() -> None:
