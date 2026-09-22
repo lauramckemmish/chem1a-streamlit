@@ -28,7 +28,7 @@ require live calls to external scientific APIs.
 | --- | --- | --- | --- |
 | Covalent atomic radius | pm | Reference / source-derived | Cordero *et al.* (2008) covalent radii |
 | First ionisation energy | kJ mol⁻¹ | Reference / source-derived | NIST Atomic Spectra Database (ASD) evaluated neutral-atom data |
-| Electron affinity | kJ mol⁻¹ | Reference / source-derived | NIST Chemistry WebBook SRD 69 gas-phase electron-affinity data, normalised to the CHEM1011 thermochemical convention below |
+| Electron affinity | kJ mol⁻¹ | Reference / source-derived | Andersen, Haugen, and Hotop (1999) recommended atomic electron affinities, normalised to the CHEM1011 thermochemical convention below |
 | Pauling electronegativity | Pauling scale (dimensionless) | Reference / source-derived | PubChem’s explicitly identified Pauling-scale periodic-table values |
 | Effective nuclear charge, Z_eff | elementary nuclear-charge units (dimensionless) | Literature-derived model data | Clementi–Raimondi self-consistent-field screening / effective-nuclear-charge data |
 
@@ -83,19 +83,31 @@ The learner-facing convention is the CHEM1011 thermochemical reaction:
 X(g) + e⁻ → X⁻(g)
 ```
 
-Favourable (exothermic) attachment is **negative**. This must be recorded
-with every curated value: many sources report electron affinity as a positive
-electron-binding/released-energy quantity. Task 2 must explicitly convert
-source values to this CHEM1011 sign convention. The canonical source is NIST
-Chemistry WebBook SRD 69, which provides literature-cited gas-phase
-electron-affinity determinations:
+Favourable (exothermic) attachment is **negative**. The canonical source is
+the published recommended-value compilation:
 
-> NIST Chemistry WebBook, SRD 69, [Ion Energetics / electron affinity]
-> (https://webbook.nist.gov/chemistry/ion/), National Institute of Standards
-> and Technology.
+> T. Andersen, H. K. Haugen, and H. Hotop, “Binding Energies in Atomic
+> Negative Ions: III”, *Journal of Physical and Chemical Reference Data*
+> **28** (1999), 1511–1533.
+> [https://doi.org/10.1063/1.556047](https://doi.org/10.1063/1.556047)
 
-Missing, unbound, or unsupported values remain missing; they are never
-fabricated, interpolated, or coerced to zero.
+That survey covers electron-affinity determinations through Z = 94 and
+establishes recommended atomic values. Its electron affinities are positive
+electron-binding energies for bound negative ions. For an appropriate
+recommended numerical ground-state atomic value, the curated project value is:
+
+```text
+EA_CHEM1011 (kJ mol⁻¹) = −EA_recommended (eV) × 96.4853321233 kJ mol⁻¹ eV⁻¹
+```
+
+The conversion constant is the exact molar energy equivalent of 1 eV using the
+2019 SI definition of the elementary charge and Avogadro constant. Inequalities
+or limits, unbound states, uncertain assignments, detection-only entries, and
+unavailable values must remain missing; they are not numerical project values.
+
+PubChem’s elemental electron-affinity table is a useful positive-binding-energy
+cross-check with convenient one-value-per-element coverage, but it is not the
+canonical authority for this property.
 
 ### Pauling electronegativity — Pauling scale
 
