@@ -157,13 +157,13 @@ def apply_shared_visual_system() -> None:
             stroke: #ffffff !important;
         }}
         label:has(input[type="checkbox"]:focus-visible) > div:first-of-type {{
-            outline: 3px solid var(--chem1a-black);
+            outline: 2px solid var(--chem1a-indigo);
             outline-offset: 2px;
-            box-shadow: 0 0 0 5px var(--chem1a-yellow);
+            box-shadow: none;
         }}
         input[type="checkbox"]:focus-visible {{
-            box-shadow: 0 0 0 4px var(--chem1a-yellow);
-            outline: 3px solid var(--chem1a-black);
+            box-shadow: none;
+            outline: 2px solid var(--chem1a-indigo);
             outline-offset: 2px;
         }}
         </style>
