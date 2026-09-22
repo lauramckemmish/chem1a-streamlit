@@ -104,10 +104,15 @@ def apply_shared_visual_system() -> None:
             border-color: var(--chem1a-yellow) !important;
             color: #17212b !important;
         }}
-        button:focus-visible {{
+        [class*="st-key-chem1a_hard_reveal_"] button:focus-visible {{
             outline: 3px solid var(--chem1a-black) !important;
             outline-offset: 2px;
             box-shadow: 0 0 0 5px var(--chem1a-yellow) !important;
+        }}
+        .st-key-chem1a_spectroscopy_stage_selector button:focus-visible {{
+            outline: 2px solid var(--chem1a-indigo) !important;
+            outline-offset: 2px;
+            box-shadow: none !important;
         }}
         label:has(input[type="checkbox"])[data-selected="true"] > div:first-of-type {{
             background: var(--chem1a-purple) !important;
@@ -141,13 +146,14 @@ def compare_prompt(text: str, *, key: str = "chem1a_compare_prompt") -> None:
 
 def stage_selector(labels: list[str], *, key: str, default_index: int = 0) -> str:
     """Render a compact local selector within an experience."""
-    return st.segmented_control(
-        "Spectroscopy stage",
-        labels,
-        default=labels[default_index],
-        key=key,
-        label_visibility="collapsed",
-    )
+    with st.container(key="chem1a_spectroscopy_stage_selector"):
+        return st.segmented_control(
+            "Spectroscopy stage",
+            labels,
+            default=labels[default_index],
+            key=key,
+            label_visibility="collapsed",
+        )
 
 
 def hard_reveal(prompt: str, *, key: str, reveal_label: str) -> bool:
