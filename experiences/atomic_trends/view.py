@@ -18,6 +18,7 @@ PLOTLY_CONFIG = {
     ],
 }
 TRACE_COLOURS = ("#3F61C4", "#8A68C8", "#007882", "#B45309", "#BE185D", "#4D7C0F", "#475569")
+MAIN_GROUPS = (1, 2, 13, 14, 15, 16, 17, 18)
 
 
 def _figure(
@@ -30,7 +31,10 @@ def _figure(
     for index, series_name in enumerate(series_names):
         series_rows = [row for row in rows if row["series"] == series_name]
         values = [float(row[property_key]) for row in series_rows]
-        x_values = [row["period"] if mode == "Groups" else row["atomic_number"] for row in series_rows]
+        x_values = [
+            row["period"] if mode == "Groups" else row["group"] if mode == "Periods" else row["atomic_number"]
+            for row in series_rows
+        ]
         customdata = [
             [row["element_name"], row["symbol"], row["atomic_number"], row["period"], row["group"] or "—", value]
             for row, value in zip(series_rows, values)
@@ -64,7 +68,10 @@ def _figure(
         showlegend=len(series_names) > 1,
         legend={"orientation": "h", "x": 0, "y": 1.05, "title": {"text": ""}},
     )
-    if mode == "Groups":
+    if mode == "Periods":
+        groups = sorted({int(row["group"]) for row in rows if row["group"] is not None})
+        figure.update_xaxes(title="Group", tickmode="array", tickvals=groups, showgrid=False)
+    elif mode == "Groups":
         figure.update_xaxes(
             title="Period", tickmode="array", tickvals=list(range(1, 8)), showgrid=False, range=[0.5, 7.5]
         )
@@ -87,7 +94,6 @@ def _subset_checkboxes(label: str, values: range, key_prefix: str, default: int,
 
 def render() -> None:
     st.header("Periodic trends")
-    st.write("What pattern do you see?")
 
     property_column, mode_column = st.columns(2)
     property_label = property_column.selectbox("Property", list(data.PROPERTY_METADATA), key="atomic_trends_property")
@@ -97,7 +103,7 @@ def render() -> None:
     if mode == "Periods":
         selections = _subset_checkboxes("Periods", range(1, 8), "atomic_trends_period", 2, 7)
     elif mode == "Groups":
-        selections = _subset_checkboxes("Groups", range(1, 19), "atomic_trends_group", 1, 9)
+        selections = _subset_checkboxes("Groups", MAIN_GROUPS, "atomic_trends_group", 1, 8)
     else:
         selections = []
 

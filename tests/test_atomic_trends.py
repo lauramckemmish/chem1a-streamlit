@@ -40,6 +40,9 @@ class AtomicTrendsDataTests(unittest.TestCase):
         figure = view._figure(rows, "First ionisation energy", "kJ mol⁻¹", show_labels=True)
         self.assertEqual(2, len(figure.data))
         self.assertTrue(all(trace.mode == "lines+markers+text" for trace in figure.data))
+        self.assertEqual("Group", figure.layout.xaxis.title.text)
+        self.assertEqual([1, 2, 13, 14, 15, 16, 17, 18], list(figure.data[0].x))
+        self.assertEqual(list(figure.data[0].x), list(figure.data[1].x))
         self.assertEqual("zoom", figure.layout.dragmode)
         self.assertTrue(figure.layout.showlegend)
         self.assertEqual(430, figure.layout.height)
@@ -74,15 +77,20 @@ class AtomicTrendsDataTests(unittest.TestCase):
             [notice.value for notice in app.info],
         )
 
-    def test_explore_mode_is_segmented_and_groups_use_two_rows_of_nine(self) -> None:
+    def test_explore_mode_is_segmented_and_groups_are_main_group_only(self) -> None:
         app = AppTest.from_file(str(APP_PATH)).run()
         explore = next(control for control in app.segmented_control if control.label == "Explore")
         self.assertEqual(["Periods", "Groups", "All elements"], list(explore.options))
         self.assertEqual("Periods", explore.value)
         explore.set_value("Groups").run()
-        group_controls = [control for control in app.checkbox if control.label in {str(value) for value in range(1, 19)}]
-        self.assertEqual([str(value) for value in range(1, 19)], [control.label for control in group_controls])
+        group_controls = [control for control in app.checkbox if control.label in {str(value) for value in view.MAIN_GROUPS}]
+        self.assertEqual([str(value) for value in view.MAIN_GROUPS], [control.label for control in group_controls])
         self.assertTrue(next(control for control in group_controls if control.label == "1").value)
+        self.assertFalse(any(control.label == "3" for control in app.checkbox))
+
+    def test_periodic_trends_has_no_learner_prompt(self) -> None:
+        app = AppTest.from_file(str(APP_PATH)).run()
+        self.assertFalse(any("What pattern do you see?" in block.value for block in app.markdown))
 
 
 if __name__ == "__main__":
