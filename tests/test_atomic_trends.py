@@ -88,6 +88,51 @@ class AtomicTrendsDataTests(unittest.TestCase):
         nitrogen = next(row for row in table_rows if row["Symbol"] == "N")
         self.assertIsNone(nitrogen["Electron affinity (kJ mol⁻¹)"])
 
+    def test_comparison_figures_share_selected_x_domain_and_preserve_sparse_gaps(self) -> None:
+        rows = data.series_for_selection("All elements", [], "first_ionisation_energy_kj_mol")
+        x_domain = view._x_domain(rows, "All elements")
+        primary = view._figure(
+            rows,
+            "First ionisation energy",
+            "kJ mol⁻¹",
+            show_labels=False,
+            mode="All elements",
+            x_range=x_domain,
+            show_xaxis=False,
+            height=340,
+        )
+        comparison = view._figure(
+            rows,
+            "Effective nuclear charge",
+            "elementary charge",
+            show_labels=False,
+            mode="All elements",
+            x_range=x_domain,
+            height=360,
+        )
+        self.assertEqual([0.5, 118.5], x_domain)
+        self.assertEqual(tuple(x_domain), primary.layout.xaxis.range)
+        self.assertEqual(tuple(x_domain), comparison.layout.xaxis.range)
+        self.assertFalse(primary.layout.xaxis.showticklabels)
+        self.assertEqual("Atomic number", comparison.layout.xaxis.title.text)
+        comparison_values = dict(zip(comparison.data[0].x, comparison.data[0].y))
+        self.assertTrue(all(comparison_values[atomic_number] is None for atomic_number in range(21, 31)))
+        self.assertFalse(comparison.data[0].connectgaps)
+
+    def test_comparison_table_includes_both_properties_and_missing_selected_rows(self) -> None:
+        rows = data.series_for_selection("Periods", [2], "first_ionisation_energy_kj_mol")
+        table_rows = view._table_rows(
+            rows,
+            "First ionisation energy",
+            "kJ mol⁻¹",
+            "Electron affinity",
+            "kJ mol⁻¹",
+        )
+        nitrogen = next(row for row in table_rows if row["Symbol"] == "N")
+        self.assertIn("First ionisation energy (kJ mol⁻¹)", nitrogen)
+        self.assertIn("Electron affinity (kJ mol⁻¹)", nitrogen)
+        self.assertIsNone(nitrogen["Electron affinity (kJ mol⁻¹)"])
+
     def test_plotly_figure_keeps_period_labels_and_constrained_interaction(self) -> None:
         rows = data.series_for_selection("Periods", [2, 3], "first_ionisation_energy_kj_mol")
         figure = view._figure(rows, "First ionisation energy", "kJ mol⁻¹", show_labels=True)
@@ -152,6 +197,24 @@ class AtomicTrendsDataTests(unittest.TestCase):
         for property_label in data.PROPERTY_METADATA:
             property_control.set_value(property_label).run()
             self.assertFalse(app.exception)
+
+    def test_comparison_is_optional_and_excludes_the_primary_property(self) -> None:
+        app = AppTest.from_file(str(APP_PATH)).run()
+        comparison_control = next(control for control in app.selectbox if control.label == "Compare with")
+        self.assertEqual("None", comparison_control.value)
+        self.assertNotIn("First ionisation energy", comparison_control.options)
+        self.assertEqual(1, len(app.get("plotly_chart")))
+
+        comparison_control.set_value("Covalent atomic radius").run()
+        self.assertFalse(app.exception)
+        self.assertEqual(2, len(app.get("plotly_chart")))
+
+        property_control = next(control for control in app.selectbox if control.label == "Property")
+        property_control.set_value("Covalent atomic radius").run()
+        comparison_control = next(control for control in app.selectbox if control.label == "Compare with")
+        self.assertEqual("None", comparison_control.value)
+        self.assertNotIn("Covalent atomic radius", comparison_control.options)
+        self.assertEqual(1, len(app.get("plotly_chart")))
 
 
 if __name__ == "__main__":

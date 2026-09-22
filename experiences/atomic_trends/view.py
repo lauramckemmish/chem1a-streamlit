@@ -22,7 +22,14 @@ MAIN_GROUPS = (1, 2, 13, 14, 15, 16, 17, 18)
 
 
 def _figure(
-    rows: list[dict[str, object]], property_label: str, units: str, show_labels: bool, mode: str = "Periods"
+    rows: list[dict[str, object]],
+    property_label: str,
+    units: str,
+    show_labels: bool,
+    mode: str = "Periods",
+    x_range: list[float] | None = None,
+    show_xaxis: bool = True,
+    height: int = 430,
 ) -> go.Figure:
     """Build a bounded, evidence-first Plotly view without analytical tools."""
     property_key = data.PROPERTY_METADATA[property_label][0]
@@ -61,7 +68,7 @@ def _figure(
             )
         )
     figure.update_layout(
-        height=430,
+        height=height,
         dragmode="zoom",
         hovermode="closest",
         template="plotly_white",
@@ -71,27 +78,67 @@ def _figure(
     )
     if mode == "Periods":
         groups = sorted({int(row["group"]) for row in rows if row["group"] is not None})
-        figure.update_xaxes(title="Group", tickmode="array", tickvals=groups, showgrid=False)
+        figure.update_xaxes(
+            title="Group" if show_xaxis else None,
+            tickmode="array",
+            tickvals=groups,
+            showgrid=False,
+            showticklabels=show_xaxis,
+            range=x_range,
+        )
     elif mode == "Groups":
         figure.update_xaxes(
-            title="Period", tickmode="array", tickvals=list(range(1, 8)), showgrid=False, range=[0.5, 7.5]
+            title="Period" if show_xaxis else None,
+            tickmode="array",
+            tickvals=list(range(1, 8)),
+            showgrid=False,
+            showticklabels=show_xaxis,
+            range=x_range or [0.5, 7.5],
         )
     else:
-        figure.update_xaxes(title="Atomic number", showgrid=False)
+        figure.update_xaxes(
+            title="Atomic number" if show_xaxis else None,
+            showgrid=False,
+            showticklabels=show_xaxis,
+            range=x_range,
+        )
     figure.update_yaxes(title=f"{property_label} / {units}", showgrid=True, gridcolor="#E5E7EB")
     return figure
 
 
-def _table_rows(rows: list[dict[str, object]], property_label: str, units: str) -> list[dict[str, object]]:
+def _x_domain(rows: list[dict[str, object]], mode: str) -> list[float] | None:
+    """Derive the shared horizontal domain from the selected population."""
+    if not rows:
+        return None
+    if mode == "Groups":
+        return [0.5, 7.5]
+    if mode == "Periods":
+        positions = [int(row["group"]) for row in rows if row["group"] is not None]
+    else:
+        positions = [int(row["atomic_number"]) for row in rows]
+    return [min(positions) - 0.5, max(positions) + 0.5] if positions else None
+
+
+def _table_rows(
+    rows: list[dict[str, object]],
+    property_label: str,
+    units: str,
+    comparison_label: str | None = None,
+    comparison_units: str | None = None,
+) -> list[dict[str, object]]:
     """Present the complete selected slice, including unavailable values."""
     property_key = data.PROPERTY_METADATA[property_label][0]
-    return [
-        {
+    comparison_key = data.PROPERTY_METADATA[comparison_label][0] if comparison_label else None
+    table_rows = []
+    for row in rows:
+        table_row = {
             "Element": row["element_name"], "Symbol": row["symbol"], "Atomic number": row["atomic_number"],
             "Period": row["period"], "Group": row["group"], f"{property_label} ({units})": row[property_key],
         }
-        for row in rows
-    ]
+        if comparison_key and comparison_label and comparison_units:
+            table_row[f"{comparison_label} ({comparison_units})"] = row[comparison_key]
+        table_rows.append(table_row)
+    return table_rows
 
 
 def _subset_checkboxes(label: str, values: range, key_prefix: str, default: int, columns: int) -> list[int]:
@@ -108,8 +155,14 @@ def _subset_checkboxes(label: str, values: range, key_prefix: str, default: int,
 def render() -> None:
     st.header("Periodic trends")
 
-    property_column, mode_column = st.columns(2)
+    property_column, comparison_column, mode_column = st.columns(3)
     property_label = property_column.selectbox("Property", list(data.PROPERTY_METADATA), key="atomic_trends_property")
+    if st.session_state.get("atomic_trends_compare") == property_label:
+        st.session_state["atomic_trends_compare"] = "None"
+    comparison_options = ["None"] + [label for label in data.PROPERTY_METADATA if label != property_label]
+    comparison_label = comparison_column.selectbox(
+        "Compare with", comparison_options, key="atomic_trends_compare"
+    )
     mode = mode_column.segmented_control(
         "Explore", ["Periods", "Groups", "All elements"], default="Periods", key="atomic_trends_mode"
     )
@@ -125,10 +178,49 @@ def render() -> None:
     if not rows or not any(row[property_key] is not None for row in rows):
         st.info("Choose at least one period or group with available reference values.")
         return
-    st.plotly_chart(
-        _figure(rows, property_label, units, show_labels=mode != "All elements", mode=mode),
-        width="stretch",
-        config=PLOTLY_CONFIG,
-    )
+    if comparison_label == "None":
+        st.plotly_chart(
+            _figure(rows, property_label, units, show_labels=mode != "All elements", mode=mode),
+            width="stretch",
+            config=PLOTLY_CONFIG,
+        )
+    else:
+        _, _, comparison_units = data.PROPERTY_METADATA[comparison_label]
+        x_range = _x_domain(rows, mode)
+        st.plotly_chart(
+            _figure(
+                rows,
+                property_label,
+                units,
+                show_labels=mode != "All elements",
+                mode=mode,
+                x_range=x_range,
+                show_xaxis=False,
+                height=340,
+            ),
+            width="stretch",
+            config=PLOTLY_CONFIG,
+        )
+        st.plotly_chart(
+            _figure(
+                rows,
+                comparison_label,
+                comparison_units,
+                show_labels=mode != "All elements",
+                mode=mode,
+                x_range=x_range,
+                height=360,
+            ),
+            width="stretch",
+            config=PLOTLY_CONFIG,
+        )
     with st.expander("Data", expanded=False):
-        st.dataframe(pd.DataFrame(_table_rows(rows, property_label, units)), width="stretch", hide_index=True)
+        comparison_units = data.PROPERTY_METADATA[comparison_label][2] if comparison_label != "None" else None
+        table_comparison_label = comparison_label if comparison_label != "None" else None
+        st.dataframe(
+            pd.DataFrame(
+                _table_rows(rows, property_label, units, table_comparison_label, comparison_units)
+            ),
+            width="stretch",
+            hide_index=True,
+        )
