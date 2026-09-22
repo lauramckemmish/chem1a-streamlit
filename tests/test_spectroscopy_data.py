@@ -85,6 +85,19 @@ class SpectroscopyDataTests(unittest.TestCase):
         self.assertNotIn("tick-label", visual)
         self.assertIn("tick-label", quantitative)
 
+    def test_atom_arrangement_renderers_can_suppress_repeated_species_labels(self) -> None:
+        visual = spectrum.render_visual_comparison_svg(["H"], show_identity=False)
+        positions = spectrum.render_quantitative_line_positions_svg(["H"], show_identity=False)
+        figure = intensity.figure_for_species(["H"], "Emission", show_species_labels=False)
+        self.assertNotIn(">Hydrogen</text>", visual)
+        self.assertNotIn(">Hydrogen</text>", positions)
+        self.assertEqual([], list(figure.layout.annotations))
+
+    def test_compact_line_position_axis_sits_close_to_the_final_row(self) -> None:
+        rendered = spectrum.render_quantitative_line_positions_svg(["H"])
+        self.assertIn('y1="42"', rendered)
+        self.assertIn('y1="49"', rendered)
+
     def test_stage_1_renderer_rejects_unapproved_species(self) -> None:
         with self.assertRaises(ValueError):
             spectrum.features_for_species(["He+"])

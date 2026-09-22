@@ -59,7 +59,7 @@ def illustrative_signal(features: list[dict[str, str]], spectrum_type: str) -> t
     return wavelengths, [1.0 - ILLUSTRATIVE_DIP_DEPTH * value for value in contributions]
 
 
-def figure_for_species(species: list[str], spectrum_type: str) -> go.Figure:
+def figure_for_species(species: list[str], spectrum_type: str, *, show_species_labels: bool = True) -> go.Figure:
     """Render one shared-axis row per selected species without combining their data."""
     rows = spectrum.features_for_species(species)
     figure = make_subplots(rows=len(rows), cols=1, shared_xaxes=True, vertical_spacing=0.05)
@@ -87,17 +87,18 @@ def figure_for_species(species: list[str], spectrum_type: str) -> go.Figure:
             row=index,
             col=1,
         )
-        axis_reference = "y domain" if index == 1 else f"y{index} domain"
-        figure.add_annotation(
-            xref="paper",
-            yref=axis_reference,
-            x=-0.02,
-            y=0.5,
-            text=spectrum.SPECIES_NAMES[symbol],
-            showarrow=False,
-            xanchor="right",
-            font={"color": "#17212b", "size": 13},
-        )
+        if show_species_labels:
+            axis_reference = "y domain" if index == 1 else f"y{index} domain"
+            figure.add_annotation(
+                xref="paper",
+                yref=axis_reference,
+                x=-0.02,
+                y=0.5,
+                text=spectrum.SPECIES_NAMES[symbol],
+                showarrow=False,
+                xanchor="right",
+                font={"color": "#17212b", "size": 13},
+            )
         figure.update_xaxes(
             range=[spectrum.WAVELENGTH_MIN_NM, spectrum.WAVELENGTH_MAX_NM],
             showgrid=True,

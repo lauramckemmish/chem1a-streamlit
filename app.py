@@ -26,7 +26,7 @@ def hydrogen_evidence_revealed() -> bool:
 
 
 def render_explore_representation(
-    representation: str, selected_species: list[str], spectrum_type: str
+    representation: str, selected_species: list[str], spectrum_type: str, *, show_species_labels: bool = True
 ) -> None:
     """Render one existing representation for one selected spectrum type."""
     if representation == "Visual spectrum":
@@ -35,7 +35,7 @@ def render_explore_representation(
             if spectrum_type == "Emission"
             else spectrum.render_visual_absorption_comparison_svg
         )
-        st.markdown(visual(selected_species), unsafe_allow_html=True)
+        st.markdown(visual(selected_species, show_identity=show_species_labels), unsafe_allow_html=True)
     elif representation == "Wavelength spectrum":
         quantitative = (
             spectrum.render_quantitative_emission_svg
@@ -45,7 +45,7 @@ def render_explore_representation(
         st.markdown(quantitative(selected_species), unsafe_allow_html=True)
     else:
         st.plotly_chart(
-            intensity.figure_for_species(selected_species, spectrum_type),
+            intensity.figure_for_species(selected_species, spectrum_type, show_species_labels=show_species_labels),
             width="stretch",
             config=intensity.PLOTLY_CONFIG,
         )
@@ -77,14 +77,19 @@ def render_explore_evidence(
                     continue
                 if representation == "Wavelength spectrum":
                     st.markdown("##### Line positions")
-                    st.markdown(spectrum.render_quantitative_line_positions_svg([symbol]), unsafe_allow_html=True)
+                    st.markdown(
+                        spectrum.render_quantitative_line_positions_svg([symbol], show_identity=False),
+                        unsafe_allow_html=True,
+                    )
                     continue
                 st.markdown(f"##### {representation}")
                 for spectrum_type in EXPLORE_SPECTRUM_TYPES:
                     if spectrum_type in selected_spectrum_types:
                         if len(selected_spectrum_types) > 1:
                             st.markdown(f"**{spectrum_type}**")
-                        render_explore_representation(representation, [symbol], spectrum_type)
+                        render_explore_representation(
+                            representation, [symbol], spectrum_type, show_species_labels=False
+                        )
 
 
 def render_explore_spectra() -> None:

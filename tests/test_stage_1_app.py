@@ -145,6 +145,14 @@ class StageOneAppTests(unittest.TestCase):
         self.assertTrue(any("Hydrogen" in heading.value for heading in self.app.markdown))
         self.assertEqual(15, len([block for block in self.app.markdown if "Selected atomic" in block.value]))
 
+    def test_atom_arrangement_uses_the_outer_atom_heading_as_the_visual_identity(self) -> None:
+        for label in ("Helium", "Sodium", "Neon", "Mercury"):
+            self.checkbox(label).set_value(False).run()
+        self.explore_control("Arrange by").set_value("Atom").run()
+        visual = next(block.value for block in self.app.markdown if "Selected atomic visual emission spectra" in block.value)
+        self.assertNotIn(">Hydrogen</text>", visual)
+        self.assertTrue(any("#### Hydrogen" in block.value for block in self.app.markdown))
+
     def test_no_selected_atom_has_a_neutral_prompt(self) -> None:
         for label in ("Hydrogen", "Helium", "Sodium", "Neon", "Mercury"):
             self.checkbox(label).set_value(False).run()

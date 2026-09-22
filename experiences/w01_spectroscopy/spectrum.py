@@ -156,12 +156,12 @@ def render_quantitative_absorption_svg(species: Iterable[str]) -> str:
     return render_quantitative_line_positions_svg(species)
 
 
-def render_quantitative_line_positions_svg(species: Iterable[str]) -> str:
+def render_quantitative_line_positions_svg(species: Iterable[str], *, show_identity: bool = True) -> str:
     """Render compact shared-axis monochrome rows for the selected line positions."""
     rows = features_for_species(species)
     row_height = 50
     top_margin = 8
-    axis_baseline = top_margin + row_height * len(rows) + 4
+    axis_baseline = top_margin + row_height * len(rows) - 9
     height = axis_baseline + 42
     svg_rows: list[str] = []
     for index, (symbol, features) in enumerate(rows.items()):
@@ -174,9 +174,14 @@ def render_quantitative_line_positions_svg(species: Iterable[str]) -> str:
             'stroke="#334155" class="spectral-line" />'
             for feature in features
         )
+        identity = (
+            f'<text x="10" y="{top + 25}" class="species">{escape(SPECIES_NAMES[symbol])}</text>'
+            if show_identity
+            else ""
+        )
         svg_rows.append(
             f'<g aria-label="{escape(SPECIES_NAMES[symbol])}: {values} nm">'
-            f'<text x="10" y="{top + 25}" class="species">{escape(SPECIES_NAMES[symbol])}</text>'
+            f'{identity}'
             f'<line x1="{QUANTITATIVE_PLOT_LEFT}" y1="{baseline}" '
             f'x2="{QUANTITATIVE_PLOT_RIGHT}" y2="{baseline}" class="row-axis" />'
             f'{lines}</g>'
@@ -204,7 +209,9 @@ def render_quantitative_line_positions_svg(species: Iterable[str]) -> str:
 </svg>'''
 
 
-def _render_visual_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[str, str]) -> str:
+def _render_visual_rows_svg(
+    rows: dict[str, list[dict[str, str]]], names: dict[str, str], *, show_identity: bool = True
+) -> str:
     """Render dark-field visual spectra using the shared feature positions.
 
     This deliberately omits axes and numerical labels for the initial phenomenon-first
@@ -225,9 +232,14 @@ def _render_visual_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[s
             f'stroke="{wavelength_to_colour(float(feature["wavelength_nm"]))}" class="visual-spectral-line" />'
             for feature in features
         )
+        identity = (
+            f'<text x="18" y="{field_top + 35}" class="visual-species">{escape(names[symbol])}</text>'
+            if show_identity
+            else ""
+        )
         svg_rows.append(
             f'<g aria-label="{escape(names[symbol])}: {values} nm">'
-            f'<text x="18" y="{field_top + 35}" class="visual-species">{escape(names[symbol])}</text>'
+            f'{identity}'
             f'<rect x="{PLOT_LEFT}" y="{field_top}" width="{PLOT_RIGHT - PLOT_LEFT}" height="{field_height}" '
             f'class="visual-field" />'
             f'{lines}</g>'
@@ -245,9 +257,9 @@ def _render_visual_rows_svg(rows: dict[str, list[dict[str, str]]], names: dict[s
 </svg>'''
 
 
-def render_visual_comparison_svg(species: Iterable[str]) -> str:
+def render_visual_comparison_svg(species: Iterable[str], *, show_identity: bool = True) -> str:
     """Render initial dark-field visual spectra from the Stage 1 feature layer."""
-    return _render_visual_rows_svg(features_for_species(species), SPECIES_NAMES)
+    return _render_visual_rows_svg(features_for_species(species), SPECIES_NAMES, show_identity=show_identity)
 
 
 def render_combined_svg(species: Iterable[str]) -> str:
@@ -325,7 +337,7 @@ def render_absorption_comparison_svg(species: Iterable[str], *, show_identity: b
     )
 
 
-def render_visual_absorption_comparison_svg(species: Iterable[str]) -> str:
+def render_visual_absorption_comparison_svg(species: Iterable[str], *, show_identity: bool = True) -> str:
     """Render the continuous visible band and dark positions without a wavelength axis."""
     rows = absorption_features_for_species(species)
     row_height = 88
@@ -344,9 +356,14 @@ def render_visual_absorption_comparison_svg(species: Iterable[str]) -> str:
             f'x2="{wavelength_x(float(feature["wavelength_nm"])):.2f}" y2="{top + 59}" class="absorption-line" />'
             for feature in features
         )
+        identity = (
+            f'<text x="18" y="{top + 35}" class="visual-species">{escape(SPECIES_NAMES[symbol])}</text>'
+            if show_identity
+            else ""
+        )
         svg_rows.append(
             f'<g aria-label="{escape(SPECIES_NAMES[symbol])} absorption: dark lines at {values} nm">'
-            f'<text x="18" y="{top + 35}" class="visual-species">{escape(SPECIES_NAMES[symbol])}</text>'
+            f'{identity}'
             f'<rect x="{PLOT_LEFT}" y="{top}" width="{PLOT_RIGHT - PLOT_LEFT}" height="66" fill="url(#visible-spectrum-band)" />'
             f'{lines}</g>'
         )
