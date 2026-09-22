@@ -141,12 +141,10 @@ def compare_prompt(text: str, *, key: str = "chem1a_compare_prompt") -> None:
 
 def stage_selector(labels: list[str], *, key: str, default_index: int = 0) -> str:
     """Render a compact local selector within an experience."""
-    if st.session_state.get(key) not in labels:
-        st.session_state[key] = labels[default_index]
     return st.segmented_control(
         "Spectroscopy stage",
         labels,
-        default=st.session_state[key],
+        default=labels[default_index],
         key=key,
         label_visibility="collapsed",
     )
