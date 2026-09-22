@@ -37,7 +37,7 @@ class StageOneAppTests(unittest.TestCase):
         self.assertEqual([], [heading.value for heading in self.app.subheader])
         self.assertFalse(any("CHEM 1A · Week 01 · Spectroscopy" in block.value for block in self.app.markdown))
         self.assertEqual(
-            ["Explore atomic spectra", "Explore periodic trends"],
+            ["Explore atomic spectra", "Periodic trends"],
             [heading.value for heading in self.app.header],
         )
 

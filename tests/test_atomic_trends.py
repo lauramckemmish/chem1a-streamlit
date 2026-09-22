@@ -41,6 +41,9 @@ class AtomicTrendsDataTests(unittest.TestCase):
         self.assertEqual(2, len(figure.data))
         self.assertTrue(all(trace.mode == "lines+markers+text" for trace in figure.data))
         self.assertEqual("zoom", figure.layout.dragmode)
+        self.assertTrue(figure.layout.showlegend)
+        self.assertEqual(430, figure.layout.height)
+        self.assertFalse(figure.layout.xaxis.showgrid)
         self.assertFalse(view.PLOTLY_CONFIG["scrollZoom"])
         self.assertFalse(view.PLOTLY_CONFIG["displaylogo"])
         self.assertIn("lasso2d", view.PLOTLY_CONFIG["modeBarButtonsToRemove"])
@@ -50,6 +53,15 @@ class AtomicTrendsDataTests(unittest.TestCase):
         figure = view._figure(rows, "Atomic radius", "pm", show_labels=False)
         self.assertEqual("lines+markers", figure.data[0].mode)
         self.assertIsNone(figure.data[0].text)
+        self.assertFalse(figure.layout.showlegend)
+
+    def test_group_plot_uses_period_on_the_horizontal_axis(self) -> None:
+        rows = data.series_for_selection("Groups", [1, 17], "first_ionisation_energy_kj_mol")
+        figure = view._figure(rows, "First ionisation energy", "kJ mol⁻¹", show_labels=True, mode="Groups")
+        self.assertEqual("Period", figure.layout.xaxis.title.text)
+        self.assertEqual(tuple(range(1, 8)), figure.layout.xaxis.tickvals)
+        self.assertEqual([1, 2, 3, 4, 5, 6, 7], list(figure.data[0].x))
+        self.assertTrue(figure.layout.showlegend)
 
     def test_period_checkboxes_are_visible_and_allow_an_empty_selection(self) -> None:
         app = AppTest.from_file(str(APP_PATH)).run()
@@ -61,6 +73,16 @@ class AtomicTrendsDataTests(unittest.TestCase):
             "Choose at least one period or group with available reference values.",
             [notice.value for notice in app.info],
         )
+
+    def test_explore_mode_is_segmented_and_groups_use_two_rows_of_nine(self) -> None:
+        app = AppTest.from_file(str(APP_PATH)).run()
+        explore = next(control for control in app.segmented_control if control.label == "Explore")
+        self.assertEqual(["Periods", "Groups", "All elements"], list(explore.options))
+        self.assertEqual("Periods", explore.value)
+        explore.set_value("Groups").run()
+        group_controls = [control for control in app.checkbox if control.label in {str(value) for value in range(1, 19)}]
+        self.assertEqual([str(value) for value in range(1, 19)], [control.label for control in group_controls])
+        self.assertTrue(next(control for control in group_controls if control.label == "1").value)
 
 
 if __name__ == "__main__":
