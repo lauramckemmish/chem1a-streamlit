@@ -1,6 +1,13 @@
 import unittest
+from pathlib import Path
+
+from streamlit.testing.v1 import AppTest
 
 from experiences.atomic_trends import data
+from experiences.atomic_trends import view
+
+
+APP_PATH = Path(__file__).resolve().parents[1] / "app.py"
 
 
 class AtomicTrendsDataTests(unittest.TestCase):
@@ -27,6 +34,33 @@ class AtomicTrendsDataTests(unittest.TestCase):
         all_rows = data.selected_elements("All elements", [])
         self.assertEqual(118, len(all_rows))
         self.assertTrue(any(row["electronegativity_pauling"] is None for row in all_rows))
+
+    def test_plotly_figure_keeps_period_labels_and_constrained_interaction(self) -> None:
+        rows = data.series_for_selection("Periods", [2, 3], "first_ionisation_energy_kj_mol")
+        figure = view._figure(rows, "First ionisation energy", "kJ mol⁻¹", show_labels=True)
+        self.assertEqual(2, len(figure.data))
+        self.assertTrue(all(trace.mode == "lines+markers+text" for trace in figure.data))
+        self.assertEqual("zoom", figure.layout.dragmode)
+        self.assertFalse(view.PLOTLY_CONFIG["scrollZoom"])
+        self.assertFalse(view.PLOTLY_CONFIG["displaylogo"])
+        self.assertIn("lasso2d", view.PLOTLY_CONFIG["modeBarButtonsToRemove"])
+
+    def test_plotly_all_elements_avoids_persistent_symbol_labels(self) -> None:
+        rows = data.series_for_selection("All elements", [], "atomic_radius_pm")
+        figure = view._figure(rows, "Atomic radius", "pm", show_labels=False)
+        self.assertEqual("lines+markers", figure.data[0].mode)
+        self.assertIsNone(figure.data[0].text)
+
+    def test_period_checkboxes_are_visible_and_allow_an_empty_selection(self) -> None:
+        app = AppTest.from_file(str(APP_PATH)).run()
+        period_controls = [control for control in app.checkbox if control.label in {str(value) for value in range(1, 8)}]
+        self.assertEqual([str(value) for value in range(1, 8)], [control.label for control in period_controls])
+        self.assertTrue(next(control for control in period_controls if control.label == "2").value)
+        next(control for control in period_controls if control.label == "2").set_value(False).run()
+        self.assertIn(
+            "Choose at least one period or group with available reference values.",
+            [notice.value for notice in app.info],
+        )
 
 
 if __name__ == "__main__":
