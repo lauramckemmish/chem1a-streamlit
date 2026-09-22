@@ -6,8 +6,8 @@ The Periodic trends experience supports CHEM1011 students to inspect evidence
 for periodic patterns and compare atomic properties. It exposes evidence; it
 does not automatically explain periodic trends.
 
-This document is the canonical specification for the next data-curation task.
-It does **not** certify the current CSV as conforming to that specification.
+This document specifies and records the curated local dataset in
+`elements.csv`.
 
 The intended source architecture is:
 
@@ -54,10 +54,11 @@ generic “atomic radius” and not van der Waals radius. The canonical source i
 > *Dalton Transactions* (2008), 2832–2838.
 > [https://doi.org/10.1039/B801115J](https://doi.org/10.1039/B801115J)
 
-Task 2 will reconcile or replace stored values against that dataset. The
-current Bokeh-derived `atomic_radius_pm` values are historical implementation
-data and must not be described as the Cordero dataset unless verified
-value-by-value.
+The active `covalent_atomic_radius_pm` snapshot uses the explicit
+`covalent_radius_cordero` field from the `mendeleev` scientific-data package,
+which transcribes this Cordero dataset. It covers Z = 1–96; later elements are
+left missing. The historical Bokeh `atomic_radius_pm` field was retired rather
+than relabelled.
 
 ### First ionisation energy — kJ mol⁻¹
 
@@ -70,10 +71,11 @@ evaluated Atomic Spectra Database (ASD), Standard Reference Database 78:
 > Technology. [https://doi.org/10.18434/T4W30F](https://doi.org/10.18434/T4W30F)
 > — [ionisation-energy interface](https://physics.nist.gov/PhysRefData/ASD/ionEnergy.html).
 
-If Task 2 retrieves values in eV, it must document the conversion to
-kJ mol⁻¹. ASD output can identify estimated/interpolated or theoretical
-values; that status must be retained rather than silently represented as a
-measurement.
+The active local snapshot uses the PubChem PUG periodic-table `IonizationEnergy`
+field as a practical periodic-table compilation consistent with NIST values,
+then converts eV to kJ mol⁻¹ with `96.4853321233 kJ mol⁻¹ eV⁻¹`. NIST ASD
+remains the primary evaluated reference and the scientific cross-check. Blank
+PubChem values remain blank locally.
 
 ### Electron affinity — kJ mol⁻¹
 
@@ -83,8 +85,8 @@ The learner-facing convention is the CHEM1011 thermochemical reaction:
 X(g) + e⁻ → X⁻(g)
 ```
 
-Favourable (exothermic) attachment is **negative**. The canonical source is
-the published recommended-value compilation:
+Favourable (exothermic) attachment is **negative**. Andersen–Haugen–Hotop is
+the primary reference-data background:
 
 > T. Andersen, H. K. Haugen, and H. Hotop, “Binding Energies in Atomic
 > Negative Ions: III”, *Journal of Physical and Chemical Reference Data*
@@ -92,27 +94,29 @@ the published recommended-value compilation:
 > [https://doi.org/10.1063/1.556047](https://doi.org/10.1063/1.556047)
 
 That survey covers electron-affinity determinations through Z = 94 and
-establishes recommended atomic values. Its electron affinities are positive
-electron-binding energies for bound negative ions. For an appropriate
-recommended numerical ground-state atomic value, the curated project value is:
+establishes recommended atomic values. The operational teaching-data source is
+the PubChem PUG periodic-table `ElectronAffinity` field, which presents a
+positive electron-binding-energy convention. The preparation script converts
+each available source value to the CHEM1011 convention:
 
 ```text
-EA_CHEM1011 (kJ mol⁻¹) = −EA_recommended (eV) × 96.4853321233 kJ mol⁻¹ eV⁻¹
+EA_CHEM1011 (kJ mol⁻¹) = −EA_source (eV) × 96.4853321233 kJ mol⁻¹ eV⁻¹
 ```
 
 The conversion constant is the exact molar energy equivalent of 1 eV using the
-2019 SI definition of the elementary charge and Avogadro constant. Inequalities
-or limits, unbound states, uncertain assignments, detection-only entries, and
-unavailable values must remain missing; they are not numerical project values.
+2019 SI definition of the elementary charge and Avogadro constant. Values
+absent from PubChem remain missing; they are not interpolated, fabricated, or
+replaced with zero.
 
-PubChem’s elemental electron-affinity table is a useful positive-binding-energy
-cross-check with convenient one-value-per-element coverage, but it is not the
-canonical authority for this property.
+The local teaching snapshot is not a direct transcription of the Andersen table;
+the paper remains the scientific reference and a cross-check for the source
+definition and positive-binding-energy convention.
 
 ### Pauling electronegativity — Pauling scale
 
-This is dimensionless Pauling-scale electronegativity. The canonical reference
-source is PubChem’s explicitly identified Pauling-scale table:
+This is dimensionless Pauling-scale electronegativity. The active source is
+PubChem’s explicitly identified Pauling-scale table, retrieved through its PUG
+periodic-table response:
 
 > PubChem, “Electronegativity in the Periodic Table of Elements”,
 > [https://pubchem.ncbi.nlm.nih.gov/periodic-table/electronegativity](https://pubchem.ncbi.nlm.nih.gov/periodic-table/electronegativity).
@@ -138,7 +142,10 @@ nuclear-charge data, including the continuation for heavier atoms:
 > [https://doi.org/10.1063/1.1712084](https://doi.org/10.1063/1.1712084)
 
 CHEM1011 shielding material treats Z_eff as orbital-specific, and the dataset
-must preserve that meaning. For this simple scalar surface, Task 2 will use
+preserves that meaning. The operational values use the `mendeleev` scientific
+data package's Clementi–Raimondi screening-constant transcription; the
+preparation script stores `Z − screening` and the selected orbital. For this
+simple scalar surface, it uses
 the following outer-orbital selection rule for **main-group** elements:
 
 | Elements | Selected value |
@@ -148,7 +155,7 @@ the following outer-orbital selection rule for **main-group** elements:
 | Groups 13–18 | outer valence np |
 
 Thus Li and Be use 2s; B–Ne use 2p; Na and Mg use 3s; and Al–Ar use 3p.
-Transition-metal Z_eff remains missing in this scalar dataset: ns and
+Transition-metal Z_eff is missing in this scalar dataset: ns and
 (n−1)d values are genuinely distinct, and flattening them would conceal
 chemistry relevant to the course. A later design may introduce
 orbital-resolved exploration instead.
@@ -162,14 +169,18 @@ are not interpolated, replaced with zero, or fabricated for continuous plots.
 Where a source reports a value as estimated or interpolated, the local curation
 must retain that source status.
 
-## Current proof-of-principle implementation
+## Local snapshot and reproducibility
 
-`elements.csv` remains a local, static copy of elemental-property fields
-bundled with the Bokeh sample dataset (`bokeh.sampledata._data.elements.csv`),
-accessed for this proof of principle on 2026-09-22. It contains one row for
-each element with atomic number 1–118. Bokeh sample data and the historical
-SciX CSV are useful historical cross-checks, not the canonical authorities for
-the future curated dataset.
+`elements.csv` is a checked local static teaching-data snapshot with one row
+for each atomic number 1–118. It is generated by
+`prepare_dataset.py`: PubChem PUG JSON supplies ionisation energy, electron
+affinity, and Pauling electronegativity; `mendeleev` supplies its explicit
+Cordero and Clementi–Raimondi-transcription fields; the script makes the eV
+conversions, electron-affinity sign inversion, and orbital selection visible.
+Neither source is accessed by the deployed Streamlit app.
+
+The Bokeh sample data and historical SciX CSV are now historical cross-checks,
+not authorities for the active dataset.
 
 The historical source field `IE-1` contains values such as H 1312, He 2372,
 and Li 520. Those magnitudes are first ionisation energies in **kJ mol⁻¹**;
@@ -177,7 +188,5 @@ the old notebook incorrectly labelled them as eV. The current local field is
 therefore named `first_ionisation_energy_kj_mol`. Blank historical source
 fields remain blank rather than estimated.
 
-The historical SciX CSV URL was unavailable from the build environment, so
-this local Bokeh copy remains the inspectable classroom asset for the existing
-proof of principle. Task 2 will curate or rebuild the local data against the
-canonical specification above.
+The historical SciX CSV URL was unavailable from the build environment. It is
+not needed by the active local dataset.

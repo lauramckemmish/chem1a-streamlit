@@ -10,8 +10,10 @@ DATA_PATH = Path(__file__).resolve().parents[2] / "data" / "atomic_trends" / "el
 
 PROPERTY_METADATA = {
     "First ionisation energy": ("first_ionisation_energy_kj_mol", "First ionisation energy", "kJ mol⁻¹"),
-    "Atomic radius": ("atomic_radius_pm", "Atomic radius", "pm"),
-    "Electronegativity": ("electronegativity_pauling", "Electronegativity", "Pauling scale"),
+    "Covalent atomic radius": ("covalent_atomic_radius_pm", "Covalent atomic radius", "pm"),
+    "Electron affinity": ("electron_affinity_kj_mol", "Electron affinity", "kJ mol⁻¹"),
+    "Pauling electronegativity": ("electronegativity_pauling", "Pauling electronegativity", "Pauling scale"),
+    "Effective nuclear charge": ("effective_nuclear_charge", "Effective nuclear charge", "elementary charge"),
 }
 
 
@@ -28,13 +30,22 @@ def elements() -> list[dict[str, object]]:
                 "element_name": row["element_name"],
                 "period": int(row["period"]),
                 "group": int(row["group"]) if row["group"].isdigit() else None,
-                "atomic_radius_pm": float(row["atomic_radius_pm"]) if row["atomic_radius_pm"] else None,
+                "covalent_atomic_radius_pm": float(row["covalent_atomic_radius_pm"])
+                if row["covalent_atomic_radius_pm"]
+                else None,
                 "first_ionisation_energy_kj_mol": float(row["first_ionisation_energy_kj_mol"])
                 if row["first_ionisation_energy_kj_mol"]
+                else None,
+                "electron_affinity_kj_mol": float(row["electron_affinity_kj_mol"])
+                if row["electron_affinity_kj_mol"]
                 else None,
                 "electronegativity_pauling": float(row["electronegativity_pauling"])
                 if row["electronegativity_pauling"]
                 else None,
+                "effective_nuclear_charge": float(row["effective_nuclear_charge"])
+                if row["effective_nuclear_charge"]
+                else None,
+                "effective_nuclear_charge_orbital": row["effective_nuclear_charge_orbital"] or None,
             }
         )
     return parsed

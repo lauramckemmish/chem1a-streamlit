@@ -18,8 +18,34 @@ class AtomicTrendsDataTests(unittest.TestCase):
 
     def test_reference_units_match_the_stored_ionisation_energy_values(self) -> None:
         hydrogen = data.elements()[0]
-        self.assertEqual(1312.0, hydrogen["first_ionisation_energy_kj_mol"])
+        self.assertAlmostEqual(1312.008, hydrogen["first_ionisation_energy_kj_mol"], places=3)
         self.assertEqual("kJ mol⁻¹", data.PROPERTY_METADATA["First ionisation energy"][2])
+
+    def test_canonical_property_schema_and_representative_source_values(self) -> None:
+        rows = {row["symbol"]: row for row in data.elements()}
+        self.assertIn("Covalent atomic radius", data.PROPERTY_METADATA)
+        self.assertAlmostEqual(128.0, rows["Li"]["covalent_atomic_radius_pm"])
+        self.assertAlmostEqual(84.0, rows["B"]["covalent_atomic_radius_pm"])
+        self.assertAlmostEqual(2.2, rows["H"]["electronegativity_pauling"])
+        self.assertIsNone(rows["He"]["electronegativity_pauling"])
+
+    def test_electron_affinity_uses_negative_chem1011_attachment_convention(self) -> None:
+        rows = {row["symbol"]: row for row in data.elements()}
+        self.assertAlmostEqual(-72.750, rows["H"]["electron_affinity_kj_mol"], places=3)
+        self.assertLess(rows["F"]["electron_affinity_kj_mol"], -300)
+        self.assertLess(rows["Cl"]["electron_affinity_kj_mol"], -300)
+        self.assertIsNone(rows["He"]["electron_affinity_kj_mol"])
+
+    def test_zeff_retains_the_selected_clementi_raimondi_orbital(self) -> None:
+        rows = {row["symbol"]: row for row in data.elements()}
+        for symbol, orbital in {
+            "H": "1s", "He": "1s", "Li": "2s", "Be": "2s", "B": "2p",
+            "Ne": "2p", "Na": "3s", "Mg": "3s", "Al": "3p", "Ar": "3p",
+        }.items():
+            self.assertEqual(orbital, rows[symbol]["effective_nuclear_charge_orbital"])
+            self.assertIsNotNone(rows[symbol]["effective_nuclear_charge"])
+        self.assertIsNone(rows["Fe"]["effective_nuclear_charge"])
+        self.assertIsNone(rows["Fe"]["effective_nuclear_charge_orbital"])
 
     def test_period_and_group_filters_preserve_natural_atomic_order(self) -> None:
         period_two = data.selected_elements("Periods", [2])
@@ -52,8 +78,8 @@ class AtomicTrendsDataTests(unittest.TestCase):
         self.assertIn("lasso2d", view.PLOTLY_CONFIG["modeBarButtonsToRemove"])
 
     def test_plotly_all_elements_avoids_persistent_symbol_labels(self) -> None:
-        rows = data.series_for_selection("All elements", [], "atomic_radius_pm")
-        figure = view._figure(rows, "Atomic radius", "pm", show_labels=False)
+        rows = data.series_for_selection("All elements", [], "covalent_atomic_radius_pm")
+        figure = view._figure(rows, "Covalent atomic radius", "pm", show_labels=False)
         self.assertEqual("lines+markers", figure.data[0].mode)
         self.assertIsNone(figure.data[0].text)
         self.assertFalse(figure.layout.showlegend)
@@ -91,6 +117,14 @@ class AtomicTrendsDataTests(unittest.TestCase):
     def test_periodic_trends_has_no_learner_prompt(self) -> None:
         app = AppTest.from_file(str(APP_PATH)).run()
         self.assertFalse(any("What pattern do you see?" in block.value for block in app.markdown))
+
+    def test_each_canonical_property_is_available_to_the_existing_surface(self) -> None:
+        app = AppTest.from_file(str(APP_PATH)).run()
+        property_control = next(control for control in app.selectbox if control.label == "Property")
+        self.assertEqual(list(data.PROPERTY_METADATA), list(property_control.options))
+        for property_label in data.PROPERTY_METADATA:
+            property_control.set_value(property_label).run()
+            self.assertFalse(app.exception)
 
 
 if __name__ == "__main__":
